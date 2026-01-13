@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="mn">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Attendance</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+
+    <div class="max-w-md mx-auto p-4 space-y-4">
+        <h1 class="text-xl font-semibold text-center">📊 Ирц</h1>
+
+        <!-- Date -->
+        <button onclick="openSheet()"
+            class="w-full h-14 rounded-2xl bg-white border px-4 text-left flex justify-between items-center">
+            <span id="dateText" class="text-gray-400">Огноо сонгох</span>
+            <span>📅</span>
+        </button>
+
+        <!-- Group -->
+        <input id="group" type="number" class="w-full h-14 rounded-2xl border px-4 text-lg"
+            placeholder="Аравт (0 = бүгд)" value="0">
+
+        <button onclick="loadData()" class="w-full h-14 rounded-2xl bg-blue-600 text-white text-lg">
+            Харах
+        </button>
+
+        <div id="result" class="space-y-3"></div>
+    </div>
+
+    <!-- Bottom Sheet -->
+    <div id="backdrop" onclick="closeSheet()" class="fixed inset-0 bg-black/40 hidden"></div>
+
+    <div id="sheet" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl p-5 translate-y-full transition">
+        <input type="date" id="realDate" class="w-full h-14 rounded-2xl border px-4" onchange="selectDate(this.value)">
+    </div>
+
+    <script>
+        const API_URL = "PASTE_YOUR_APPS_SCRIPT_URL";
+
+        let selectedDate = null;
+
+        function openSheet() {
+            backdrop.classList.remove('hidden');
+            sheet.classList.remove('translate-y-full');
+        }
+        function closeSheet() {
+            backdrop.classList.add('hidden');
+            sheet.classList.add('translate-y-full');
+        }
+        function selectDate(v) {
+            selectedDate = v;
+            dateText.innerText = v;
+            dateText.className = 'text-gray-900';
+            closeSheet();
+        }
+
+        async function loadData() {
+            if (!selectedDate) return alert("Огноо сонгоно уу");
+            const group = document.getElementById('group').value || 0;
+
+            result.innerHTML = 'Ачаалж байна...';
+
+            const res = await fetch(`${API_URL}?date=${selectedDate}&group=${group}`);
+            const rows = await res.json();
+
+            result.innerHTML = '';
+            if (!rows.length) {
+                result.innerHTML = '<div class="text-gray-400 text-center">Мэдээлэл алга</div>';
+                return;
+            }
+
+            rows.forEach(r => {
+                result.innerHTML += `
+      <div class="bg-white rounded-2xl p-4 shadow">
+        <div class="font-semibold">${r.name}</div>
+        <div class="text-sm text-gray-500">⏱ ${r.times.join(', ')}</div>
+      </div>`;
+            });
+        }
+    </script>
+
+</body>
+
+</html>
