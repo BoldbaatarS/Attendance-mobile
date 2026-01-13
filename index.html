@@ -2,134 +2,156 @@
 <html lang="mn">
 
 <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
     <title>Attendance</title>
 
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <!-- PWA -->
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#2563eb" />
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563eb">
 
     <!-- iOS -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
 </head>
-
-<script>
-    if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("/sw.js");
-    }
-</script>
-
 
 <body class="bg-gray-100 min-h-screen">
 
-    <div class="max-w-md mx-auto p-4 space-y-4">
-        <h1 class="text-xl font-semibold text-center">📊 Ирц</h1>
+    <!-- ================= LOGIN ================= -->
+    <div id="loginPage" class="min-h-screen flex items-center justify-center px-4">
+        <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow">
+            <h1 class="text-xl font-semibold text-center mb-6">📱 Нэвтрэх</h1>
 
-        <!-- Date -->
-        <button onclick="openSheet()"
-            class="w-full h-14 rounded-2xl bg-white border px-4 text-left flex justify-between items-center">
-            <span id="dateText" class="text-gray-400">Огноо сонгох</span>
-            <span>📅</span>
-        </button>
+            <input id="phoneInput" type="tel" placeholder="Утасны дугаар"
+                class="w-full p-3 border rounded-xl mb-4 text-lg" />
 
-        <!-- Group -->
-        <input id="group" type="number" class="w-full h-14 rounded-2xl border px-4 text-lg"
-            placeholder="Аравт (0 = бүгд)" value="0">
-
-        <button onclick="loadData()" class="w-full h-14 rounded-2xl bg-blue-600 text-white text-lg">
-            Харах
-        </button>
-
-        <div id="result" class="space-y-3"></div>
-    </div>
-
-    <!-- Bottom Sheet -->
-    <div id="backdrop" onclick="closeSheet()" class="fixed inset-0 bg-black/40 hidden"></div>
-
-    <div id="sheet" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl p-5 translate-y-full transition">
-        <input type="date" id="realDate" class="w-full h-14 rounded-2xl border px-4" onchange="selectDate(this.value)">
-    </div>
-    <div id="login" class="min-h-screen flex items-center justify-center">
-        <div class="bg-white p-6 rounded-xl w-full max-w-sm shadow">
-            <h2 class="text-xl font-semibold text-center mb-4">📱 Нэвтрэх</h2>
-
-            <input id="phone" class="w-full p-3 border rounded-lg mb-4" placeholder="Утасны дугаар"
-                inputmode="numeric" />
-
-            <button onclick="login()" class="w-full bg-blue-600 text-white p-3 rounded-lg">
+            <button onclick="login()" class="w-full bg-blue-600 text-white py-3 rounded-xl text-lg">
                 Нэвтрэх
             </button>
 
-            <p id="loginError" class="text-red-500 text-sm mt-2 hidden">
+            <p id="loginError" class="hidden text-red-500 text-center mt-3">
                 Утас олдсонгүй
             </p>
         </div>
     </div>
 
+    <!-- ================= APP ================= -->
+    <div id="appPage" class="hidden max-w-md mx-auto p-4">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <p id="userName" class="font-semibold text-lg"></p>
+                <p id="userGroup" class="text-sm text-gray-500"></p>
+            </div>
+            <button onclick="logout()" class="text-red-500 text-sm">Гарах</button>
+        </div>
+
+        <!-- Controls -->
+        <div class="bg-white p-4 rounded-2xl shadow space-y-3">
+
+            <input id="dateInput" type="date" class="w-full p-3 border rounded-xl text-lg" />
+
+            <input id="groupInput" type="number" placeholder="Аравт (0 = бүгд)"
+                class="w-full p-3 border rounded-xl text-lg" />
+
+            <button onclick="loadAttendance()" class="w-full bg-blue-600 text-white py-3 rounded-xl text-lg">
+                Харах
+            </button>
+        </div>
+
+        <!-- Results -->
+        <div id="result" class="mt-4 space-y-3"></div>
+    </div>
+
     <script>
+        /* ================= CONFIG ================= */
         const API_URL = "https://script.google.com/macros/s/AKfycbwZqnbMgzb3qRrbQPLVZYH15MP2mW-LLZX-7q_v_n7rOWQYq3qznsA-zGbQBl6mPiArMw/exec";
 
-        let selectedDate = null;
 
-        function openSheet() {
-            backdrop.classList.remove('hidden');
-            sheet.classList.remove('translate-y-full');
-        }
-        function closeSheet() {
-            backdrop.classList.add('hidden');
-            sheet.classList.add('translate-y-full');
-        }
-        function selectDate(v) {
-            selectedDate = v;
-            dateText.innerText = v;
-            dateText.className = 'text-gray-900';
-            closeSheet();
-        }
+        /* ================= LOGIN ================= */
         function login() {
-            const phone = document.getElementById("phone").value.trim();
+            const phone = document.getElementById("phoneInput").value.trim();
             if (!phone) return;
 
-            fetch(`${API}?action=login&phone=${phone}`)
+            fetch(`${API_URL}?action=login&phone=${phone}`)
                 .then(r => r.json())
                 .then(res => {
                     if (res.error) {
                         document.getElementById("loginError").classList.remove("hidden");
                         return;
                     }
-
                     localStorage.setItem("user", JSON.stringify(res));
                     showApp();
                 });
         }
 
-        async function loadData() {
-            if (!selectedDate) return alert("Огноо сонгоно уу");
-            const group = document.getElementById('group').value || 0;
+        function logout() {
+            localStorage.clear();
+            location.reload();
+        }
 
-            result.innerHTML = 'Ачаалж байна...';
+        /* ================= INIT ================= */
+        function showApp() {
+            const user = JSON.parse(localStorage.getItem("user"));
+            if (!user) return;
 
-            const res = await fetch(`${API_URL}?date=${selectedDate}&group=${group}`);
-            const rows = await res.json();
+            document.getElementById("loginPage").classList.add("hidden");
+            document.getElementById("appPage").classList.remove("hidden");
 
-            result.innerHTML = '';
-            if (!rows.length) {
-                result.innerHTML = '<div class="text-gray-400 text-center">Мэдээлэл алга</div>';
+            document.getElementById("userName").innerText = user.name;
+            document.getElementById("userGroup").innerText = "Аравт: " + user.group;
+        }
+
+        window.onload = () => {
+            if (localStorage.getItem("user")) showApp();
+        };
+
+        /* ================= ATTENDANCE ================= */
+        function loadAttendance() {
+            const date = document.getElementById("dateInput").value;
+            const group = document.getElementById("groupInput").value || 0;
+
+            if (!date) {
+                alert("Огноо сонгоно уу");
+                return;
+            }
+
+            document.getElementById("result").innerHTML =
+                "<p class='text-center text-gray-500'>⏳ Ачааллаж байна...</p>";
+
+            fetch(`${API_URL}?action=day&date=${date}&group=${group}`)
+                .then(r => r.json())
+                .then(renderResult)
+                .catch(() => {
+                    document.getElementById("result").innerHTML =
+                        "<p class='text-center text-red-500'>Алдаа гарлаа</p>";
+                });
+        }
+
+        function renderResult(rows) {
+            const wrap = document.getElementById("result");
+            wrap.innerHTML = "";
+
+            if (!rows || rows.length === 0) {
+                wrap.innerHTML =
+                    "<p class='text-center text-gray-500'>Мэдээлэл олдсонгүй</p>";
                 return;
             }
 
             rows.forEach(r => {
-                result.innerHTML += `
-      <div class="bg-white rounded-2xl p-4 shadow">
-        <div class="font-semibold">${r.name}</div>
-        <div class="text-sm text-gray-500">⏱ ${r.times.join(', ')}</div>
-      </div>`;
+                wrap.innerHTML += `
+      <div class="bg-white p-4 rounded-2xl shadow flex justify-between items-center">
+        <div>
+          <p class="font-medium">${r.name}</p>
+          <p class="text-sm text-gray-500">Аравт: ${r.group}</p>
+        </div>
+        <div class="text-xl font-bold text-blue-600">${r.times.length}</div>
+      </div>
+    `;
             });
         }
     </script>
