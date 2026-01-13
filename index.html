@@ -9,7 +9,6 @@
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- PWA basic -->
     <meta name="theme-color" content="#2563eb">
 </head>
 
@@ -55,7 +54,18 @@
 
         <!-- Controls -->
         <div class="bg-white p-4 rounded-2xl shadow space-y-3">
-            <input id="dateInput" type="date" class="w-full p-3 border rounded-xl text-lg" />
+
+            <!-- Day -->
+            <input id="dateDay" type="date" class="w-full p-3 border rounded-xl text-lg cursor-pointer"
+                onclick="openPicker(this)" />
+
+            <!-- Week (Monday only) -->
+            <input id="dateWeek" type="date" class="hidden w-full p-3 border rounded-xl text-lg cursor-pointer"
+                onclick="openPicker(this)" />
+
+            <!-- Month -->
+            <input id="dateMonth" type="month" class="hidden w-full p-3 border rounded-xl text-lg cursor-pointer"
+                onclick="openPicker(this)" />
 
             <input id="groupInput" type="number" placeholder="Аравт (0 = бүгд)"
                 class="w-full p-3 border rounded-xl text-lg" />
@@ -124,6 +134,14 @@
                     (m === mode ? "bg-blue-600 text-white" : "bg-gray-200");
             });
 
+            document.getElementById("dateDay").classList.add("hidden");
+            document.getElementById("dateWeek").classList.add("hidden");
+            document.getElementById("dateMonth").classList.add("hidden");
+
+            if (mode === "day") document.getElementById("dateDay").classList.remove("hidden");
+            if (mode === "week") document.getElementById("dateWeek").classList.remove("hidden");
+            if (mode === "month") document.getElementById("dateMonth").classList.remove("hidden");
+
             loadAttendance();
         }
 
@@ -131,10 +149,41 @@
             return s.charAt(0).toUpperCase() + s.slice(1);
         }
 
+        /* ================= DATE PICKER UX ================= */
+        function openPicker(el) {
+            // Chrome / Edge / Android WebView
+            if (el.showPicker) {
+                el.showPicker();
+            } else {
+                el.focus();
+            }
+        }
+
+        function isMonday(dateStr) {
+            return new Date(dateStr).getDay() === 1;
+        }
+
         /* ================= LOAD ================= */
         function loadAttendance() {
-            const date = document.getElementById("dateInput").value;
+            let date = "";
             const group = document.getElementById("groupInput").value || 0;
+
+            if (viewMode === "day") {
+                date = document.getElementById("dateDay").value;
+            }
+
+            if (viewMode === "week") {
+                date = document.getElementById("dateWeek").value;
+                if (date && !isMonday(date)) {
+                    alert("7 хоногийн Даваа гаригийг сонгоно уу");
+                    return;
+                }
+            }
+
+            if (viewMode === "month") {
+                const m = document.getElementById("dateMonth").value; // yyyy-MM
+                date = m ? `${m}-01` : "";
+            }
 
             if (!date) {
                 alert("Огноо сонгоно уу");
@@ -153,10 +202,6 @@
                 .then(data => {
                     if (viewMode === "day") renderDay(data);
                     else renderSummary(data);
-                })
-                .catch(() => {
-                    document.getElementById("result").innerHTML =
-                        "<p class='text-center text-red-500'>Алдаа гарлаа</p>";
                 });
         }
 
