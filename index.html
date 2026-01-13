@@ -56,6 +56,22 @@
     <div id="sheet" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl p-5 translate-y-full transition">
         <input type="date" id="realDate" class="w-full h-14 rounded-2xl border px-4" onchange="selectDate(this.value)">
     </div>
+    <div id="login" class="min-h-screen flex items-center justify-center">
+        <div class="bg-white p-6 rounded-xl w-full max-w-sm shadow">
+            <h2 class="text-xl font-semibold text-center mb-4">📱 Нэвтрэх</h2>
+
+            <input id="phone" class="w-full p-3 border rounded-lg mb-4" placeholder="Утасны дугаар"
+                inputmode="numeric" />
+
+            <button onclick="login()" class="w-full bg-blue-600 text-white p-3 rounded-lg">
+                Нэвтрэх
+            </button>
+
+            <p id="loginError" class="text-red-500 text-sm mt-2 hidden">
+                Утас олдсонгүй
+            </p>
+        </div>
+    </div>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbwZqnbMgzb3qRrbQPLVZYH15MP2mW-LLZX-7q_v_n7rOWQYq3qznsA-zGbQBl6mPiArMw/exec";
@@ -75,6 +91,22 @@
             dateText.innerText = v;
             dateText.className = 'text-gray-900';
             closeSheet();
+        }
+        function login() {
+            const phone = document.getElementById("phone").value.trim();
+            if (!phone) return;
+
+            fetch(`${API}?action=login&phone=${phone}`)
+                .then(r => r.json())
+                .then(res => {
+                    if (res.error) {
+                        document.getElementById("loginError").classList.remove("hidden");
+                        return;
+                    }
+
+                    localStorage.setItem("user", JSON.stringify(res));
+                    showApp();
+                });
         }
 
         async function loadData() {
