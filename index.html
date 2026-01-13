@@ -5,34 +5,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Attendance</title>
-
-    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <meta name="theme-color" content="#2563eb">
 </head>
 
 <body class="bg-gray-100 min-h-screen">
 
-    <!-- ================= LOGIN ================= -->
+    <!-- LOGIN -->
     <div id="loginPage" class="min-h-screen flex items-center justify-center px-4">
         <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow">
             <h1 class="text-xl font-semibold text-center mb-6">📱 Нэвтрэх</h1>
-
             <input id="phoneInput" type="tel" placeholder="Утасны дугаар"
                 class="w-full p-3 border rounded-xl mb-4 text-lg" />
-
             <button onclick="login()" class="w-full bg-blue-600 text-white py-3 rounded-xl text-lg">
                 Нэвтрэх
             </button>
-
-            <p id="loginError" class="hidden text-red-500 text-center mt-3">
-                Утас олдсонгүй
-            </p>
+            <p id="loginError" class="hidden text-red-500 text-center mt-3">Утас олдсонгүй</p>
         </div>
     </div>
 
-    <!-- ================= APP ================= -->
+    <!-- APP -->
     <div id="appPage" class="hidden max-w-md mx-auto p-4 space-y-4">
 
         <!-- Header -->
@@ -44,7 +35,7 @@
             <button onclick="logout()" class="text-red-500 text-sm">Гарах</button>
         </div>
 
-        <!-- Mode buttons -->
+        <!-- Mode -->
         <div class="flex gap-2">
             <button id="btnDay" onclick="setMode('day')"
                 class="flex-1 py-2 rounded-xl bg-blue-600 text-white">Өдөр</button>
@@ -55,207 +46,146 @@
         <!-- Controls -->
         <div class="bg-white p-4 rounded-2xl shadow space-y-3">
 
-            <!-- Day -->
-            <input id="dateDay" type="date" class="w-full p-3 border rounded-xl text-lg cursor-pointer"
-                onclick="openPicker(this)" />
+            <input id="dateDay" type="date" class="w-full p-3 border rounded-xl" onclick="this.showPicker?.()" />
+            <input id="dateWeek" type="date" class="hidden w-full p-3 border rounded-xl"
+                onclick="this.showPicker?.()" />
+            <input id="dateMonth" type="month" class="hidden w-full p-3 border rounded-xl"
+                onclick="this.showPicker?.()" />
 
-            <!-- Week (Monday only) -->
-            <input id="dateWeek" type="date" class="hidden w-full p-3 border rounded-xl text-lg cursor-pointer"
-                onclick="openPicker(this)" />
+            <input id="groupInput" type="number" class="w-full p-3 border rounded-xl" />
 
-            <!-- Month -->
-            <input id="dateMonth" type="month" class="hidden w-full p-3 border rounded-xl text-lg cursor-pointer"
-                onclick="openPicker(this)" />
-
-            <input id="groupInput" type="number" placeholder="Аравт (0 = бүгд)"
-                class="w-full p-3 border rounded-xl text-lg" />
-
-            <button onclick="loadAttendance()" class="w-full bg-blue-600 text-white py-3 rounded-xl text-lg">
+            <button onclick="loadAttendance()" class="w-full bg-blue-600 text-white py-3 rounded-xl">
                 Харах
             </button>
         </div>
+
+        <!-- Week calendar -->
+        <div id="weekCalendar" class="hidden grid grid-cols-7 gap-1 text-center text-xs"></div>
 
         <!-- Result -->
         <div id="result" class="space-y-3"></div>
     </div>
 
     <script>
-        /* ================= CONFIG ================= */
-        const API_URL =
-            "https://script.google.com/macros/s/AKfycbyNhXSZIr5YHR-iZ_bpNqZneL61EKOrtJJlwcj43GmTjiYyGf_rgmUha7_cosGWxgCgcg/exec";
-
+        const API_URL = "https://script.google.com/macros/s/AKfycbyNhXSZIr5YHR-iZ_bpNqZneL61EKOrtJJlwcj43GmTjiYyGf_rgmUha7_cosGWxgCgcg/exec";
         let viewMode = "day";
 
-        /* ================= LOGIN ================= */
+        /* LOGIN */
         function login() {
-            const phone = document.getElementById("phoneInput").value.trim();
-            if (!phone) return;
-
+            const phone = phoneInput.value.trim();
             fetch(`${API_URL}?action=login&phone=${phone}`)
                 .then(r => r.json())
-                .then(res => {
-                    if (!res.success) {
-                        document.getElementById("loginError").classList.remove("hidden");
-                        return;
-                    }
-                    localStorage.setItem("user", JSON.stringify(res));
+                .then(u => {
+                    if (!u.success) return loginError.classList.remove("hidden");
+                    localStorage.setItem("user", JSON.stringify(u));
                     showApp();
                 });
         }
+        function logout() { localStorage.clear(); location.reload(); }
 
-        function logout() {
-            localStorage.clear();
-            location.reload();
-        }
-
-        /* ================= INIT ================= */
+        /* INIT */
         function showApp() {
-            const user = JSON.parse(localStorage.getItem("user"));
-            if (!user) return;
+            const u = JSON.parse(localStorage.getItem("user"));
+            loginPage.classList.add("hidden");
+            appPage.classList.remove("hidden");
+            userName.innerText = u.name;
+            userGroup.innerText = "Аравт: " + u.group;
 
-            document.getElementById("loginPage").classList.add("hidden");
-            document.getElementById("appPage").classList.remove("hidden");
-
-            document.getElementById("userName").innerText = user.name;
-            document.getElementById("userGroup").innerText = "Аравт: " + user.group;
+            groupInput.value = u.group;
+            if (u.group !== 0) groupInput.disabled = true;
         }
+        window.onload = () => localStorage.getItem("user") && showApp();
 
-        window.onload = () => {
-            if (localStorage.getItem("user")) showApp();
-        };
-
-        /* ================= MODE ================= */
-        function setMode(mode) {
-            viewMode = mode;
-
-            ["day", "week", "month"].forEach(m => {
-                document.getElementById("btn" + capitalize(m)).className =
-                    "flex-1 py-2 rounded-xl " +
-                    (m === mode ? "bg-blue-600 text-white" : "bg-gray-200");
+        /* MODE */
+        function setMode(m) {
+            viewMode = m;
+            ["day", "week", "month"].forEach(x => {
+                document.getElementById("btn" + x[0].toUpperCase() + x.slice(1))
+                    .className = "flex-1 py-2 rounded-xl " + (x === m ? "bg-blue-600 text-white" : "bg-gray-200");
             });
 
-            document.getElementById("dateDay").classList.add("hidden");
-            document.getElementById("dateWeek").classList.add("hidden");
-            document.getElementById("dateMonth").classList.add("hidden");
+            dateDay.classList.add("hidden");
+            dateWeek.classList.add("hidden");
+            dateMonth.classList.add("hidden");
+            weekCalendar.classList.add("hidden");
 
-            if (mode === "day") document.getElementById("dateDay").classList.remove("hidden");
-            if (mode === "week") document.getElementById("dateWeek").classList.remove("hidden");
-            if (mode === "month") document.getElementById("dateMonth").classList.remove("hidden");
+            if (m === "day") dateDay.classList.remove("hidden");
+            if (m === "week") { dateWeek.classList.remove("hidden"); weekCalendar.classList.remove("hidden"); }
+            if (m === "month") dateMonth.classList.remove("hidden");
+        }
 
+        /* WEEK CALENDAR */
+        function renderWeekCalendar(monday) {
+            weekCalendar.innerHTML = "";
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(monday);
+                d.setDate(d.getDate() + i);
+                const ds = d.toISOString().slice(0, 10);
+                weekCalendar.innerHTML += `
+      <button class="bg-gray-100 rounded p-1 hover:bg-blue-100"
+        onclick="loadDay('${ds}')">
+        ${ds.slice(5)}
+      </button>`;
+            }
+        }
+        function loadDay(date) {
+            viewMode = "day"; setMode("day");
+            dateDay.value = date;
             loadAttendance();
         }
 
-        function capitalize(s) {
-            return s.charAt(0).toUpperCase() + s.slice(1);
-        }
-
-        /* ================= DATE PICKER UX ================= */
-        function openPicker(el) {
-            // Chrome / Edge / Android WebView
-            if (el.showPicker) {
-                el.showPicker();
-            } else {
-                el.focus();
-            }
-        }
-
-        function isMonday(dateStr) {
-            return new Date(dateStr).getDay() === 1;
-        }
-
-        /* ================= LOAD ================= */
+        /* LOAD */
         function loadAttendance() {
+            const group = groupInput.value || 0;
             let date = "";
-            const group = document.getElementById("groupInput").value || 0;
 
-            if (viewMode === "day") {
-                date = document.getElementById("dateDay").value;
-            }
-
+            if (viewMode === "day") date = dateDay.value;
             if (viewMode === "week") {
-                date = document.getElementById("dateWeek").value;
-                if (date && !isMonday(date)) {
-                    alert("7 хоногийн Даваа гаригийг сонгоно уу");
-                    return;
-                }
+                date = dateWeek.value;
+                if (new Date(date).getDay() !== 1) return alert("Даваа сонгоно уу");
+                renderWeekCalendar(date);
             }
+            if (viewMode === "month") date = dateMonth.value + "-01";
+            if (!date) return alert("Огноо сонгоно уу");
 
-            if (viewMode === "month") {
-                const m = document.getElementById("dateMonth").value; // yyyy-MM
-                date = m ? `${m}-01` : "";
-            }
-
-            if (!date) {
-                alert("Огноо сонгоно уу");
-                return;
-            }
-
-            let action = "attendanceByDay";
-            if (viewMode === "week") action = "attendanceByWeek";
-            if (viewMode === "month") action = "attendanceByMonth";
-
-            document.getElementById("result").innerHTML =
-                "<p class='text-center text-gray-500'>⏳ Ачааллаж байна...</p>";
+            const action =
+                viewMode === "day" ? "attendanceByDay" :
+                    viewMode === "week" ? "attendanceByWeek" :
+                        "attendanceByMonth";
 
             fetch(`${API_URL}?action=${action}&date=${date}&group=${group}`)
                 .then(r => r.json())
-                .then(data => {
-                    if (viewMode === "day") renderDay(data);
-                    else renderSummary(data);
-                });
+                .then(d => viewMode === "day" ? renderDay(d) : renderSummary(d));
         }
 
-        /* ================= RENDER ================= */
+        /* RENDER */
         function renderDay(rows) {
-            const wrap = document.getElementById("result");
-            wrap.innerHTML = "";
-
-            if (!rows || rows.length === 0) {
-                wrap.innerHTML =
-                    "<p class='text-center text-gray-500'>Мэдээлэл олдсонгүй</p>";
-                return;
-            }
-
+            result.innerHTML = "";
             rows.forEach(r => {
-                const times = r.times
-                    .map(t => `<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm">${t}</span>`)
-                    .join(" ");
-
-                wrap.innerHTML += `
-      <div class="bg-white p-4 rounded-2xl shadow space-y-2">
-        <div class="flex justify-between items-center">
+                result.innerHTML += `
+      <div class="bg-white p-3 rounded-xl shadow">
+        <div class="flex justify-between">
           <div>
             <p class="font-medium">${r.name}</p>
-            <p class="text-sm text-gray-500">Аравт: ${r.group}</p>
+            <p class="text-xs text-gray-500">Аравт ${r.group}</p>
           </div>
-          <div class="text-xl font-bold text-blue-600">${r.times.length}</div>
+          <b>${r.times.length}</b>
         </div>
-        <div class="flex gap-2 flex-wrap">${times}</div>
-      </div>
-    `;
+        <div class="flex gap-1 mt-1">${r.times.map(t => `<span class="bg-blue-100 px-2 rounded">${t}</span>`).join("")}</div>
+      </div>`;
             });
         }
-
         function renderSummary(rows) {
-            const wrap = document.getElementById("result");
-            wrap.innerHTML = "";
-
-            if (!rows || rows.length === 0) {
-                wrap.innerHTML =
-                    "<p class='text-center text-gray-500'>Мэдээлэл олдсонгүй</p>";
-                return;
-            }
-
+            result.innerHTML = "";
             rows.forEach(r => {
-                wrap.innerHTML += `
-      <div class="bg-white p-4 rounded-2xl shadow flex justify-between items-center">
+                result.innerHTML += `
+      <div class="bg-white p-3 rounded-xl shadow flex justify-between">
         <div>
           <p class="font-medium">${r.name}</p>
-          <p class="text-sm text-gray-500">Аравт: ${r.group}</p>
+          <p class="text-xs text-gray-500">Аравт ${r.group}</p>
         </div>
-        <div class="text-xl font-bold text-blue-600">${r.count}</div>
-      </div>
-    `;
+        <b>${r.count}</b>
+      </div>`;
             });
         }
     </script>
