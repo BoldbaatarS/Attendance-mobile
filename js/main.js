@@ -1,9 +1,8 @@
-// js/main.js
 import { initApp, loadAttendance, setMode, toggleChart } from "./app.js";
 import { login, logout } from "./auth.js";
 import { initTheme, toggleTheme } from "./theme.js";
 
-/* 👉 HTML inline onclick-д зориулж window-д bind */
+// 🌍 HTML-д холбох
 window.login = login;
 window.logout = logout;
 window.loadAttendance = loadAttendance;
