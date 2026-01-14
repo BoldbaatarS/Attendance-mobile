@@ -159,10 +159,6 @@
             }
             if (viewMode === "week") {
                 action = "attendanceByWeek";
-                date = dateWeek.value + "-01";
-            }
-            if (viewMode === "week") {
-                action = "attendanceByWeek";
 
                 if (!dateWeek.value) {
                     alert("7 хоног сонгоно уу");
@@ -170,6 +166,10 @@
                 }
 
                 date = weekToMonday(dateWeek.value);
+            }
+            if (viewMode === "month") {
+                action = "attendanceByMonth";
+                date = dateMonth.value + "-01";
             }
 
             if (!date) {
