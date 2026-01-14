@@ -1,12 +1,6 @@
+// js/auth.js
 import { initApp } from "./app.js";
 import { API_URL } from "./config.js";
-import { state } from "./state.js";
-
-export function setLoginLoading(on) {
-    loginBtn.disabled = on;
-    loginBtnText.innerText = on ? "Нэвтэрч байна" : "Нэвтрэх";
-    loginSpinner.classList.toggle("hidden", !on);
-}
 
 export async function login() {
     const phone = phoneInput.value.trim();
@@ -16,17 +10,19 @@ export async function login() {
     setLoginLoading(true);
 
     try {
-        const r = await fetch(`${API_URL}?action=login&phone=${encodeURIComponent(phone)}`);
-        const d = await r.json();
+        const res = await fetch(`${API_URL}?action=login&phone=${encodeURIComponent(phone)}`);
+        const data = await res.json();
 
-        if (!d?.success) {
+        if (!data || data.success !== true) {
             loginError.classList.remove("hidden");
             return;
         }
 
-        localStorage.setItem("user", JSON.stringify(d));
-        state.user = d;
+        localStorage.setItem("user", JSON.stringify(data));
         initApp();
+    } catch (e) {
+        console.error(e);
+        loginError.classList.remove("hidden");
     } finally {
         setLoginLoading(false);
     }
