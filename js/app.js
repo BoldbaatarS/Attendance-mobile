@@ -82,9 +82,12 @@ export async function loadAttendance() {
         const data = await res.json();
 
         if (state.viewMode === "day") {
-            renderDayCards(data);
+            const merged = await mergeDayWithAbsent(data, group);
+            renderDayCards(merged);
+            drawCharts(merged, state);
         } else {
             renderSummarySorted(data); // ✅ ЗӨВ
+            drawCharts(data, state);
         }
 
         drawCharts(data, state);
@@ -97,5 +100,45 @@ export async function loadAttendance() {
     } finally {
         loading.classList.add("hidden");
     }
+}
+async function mergeDayWithAbsent(attendedRows, group) {
+    // 1. тухайн аравтын бүх хүмүүс
+    const res = await fetch(
+        `${API_URL}?action=people&group=${group}`
+    );
+    const people = await res.json();
+
+    // 2. ирсэн хүмүүс map
+    const attendedMap = {};
+    (attendedRows || []).forEach(r => {
+        attendedMap[r.name] = r;
+    });
+
+    // 3. merge
+    const merged = people.map(p => {
+        const a = attendedMap[p.name];
+        return a
+            ? {
+                name: p.name,
+                group: p.group,
+                times: a.times || [],
+                present: true
+            }
+            : {
+                name: p.name,
+                group: p.group,
+                times: [],
+                present: false
+            };
+    });
+
+    // 4. аравт + нэрээр эрэмбэлэх
+    merged.sort(
+        (a, b) =>
+            Number(a.group) - Number(b.group) ||
+            a.name.localeCompare(b.name)
+    );
+
+    return merged;
 }
 

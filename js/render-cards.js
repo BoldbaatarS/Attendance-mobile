@@ -7,52 +7,40 @@
  * =========================
  */
 export function renderDayCards(rows) {
-  const result = document.getElementById("result");
-  if (!result) return;
-
   result.innerHTML = "";
 
   if (!rows || rows.length === 0) {
     result.innerHTML =
-      `<p class="text-center text-gray-500 dark:text-gray-400">
-        Мэдээлэл олдсонгүй
-      </p>`;
+      "<p class='text-center text-gray-500'>Мэдээлэл олдсонгүй</p>";
     return;
   }
 
   rows.forEach(r => {
-    const right = r.present
-      ? `<div class="text-xl font-bold text-blue-600">
-           ${(r.times || []).length}
-         </div>`
-      : `<div class="text-sm font-semibold text-red-500">
-           Ирэээгүй
-         </div>`;
+    const times = Array.isArray(r.times) ? r.times : [];
+    const present = times.length > 0;
 
-    const timesHtml = (r.times || []).map(t => `
-      <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900/40
-                   rounded-lg text-sm">
-        ${t}
-      </span>
-    `).join("");
+    const right = present
+      ? `<div class="text-xl font-bold text-blue-600">${times.length}</div>`
+      : `<div class="text-sm font-semibold text-red-500">Ирээгүй</div>`;
+
+    const badges = times.map(t => `
+          <span class="px-2 py-1 bg-blue-100 rounded-lg text-sm">${t}</span>
+      `).join("");
 
     result.innerHTML += `
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow">
-        <div class="flex justify-between items-center">
-          <div>
-            <p class="font-medium">${r.name}</p>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-              Аравт: ${r.group}
-            </p>
+      <div class="bg-white p-4 rounded-2xl shadow">
+          <div class="flex justify-between items-center">
+              <div>
+                  <p class="font-medium">${r.name}</p>
+                  <p class="text-sm text-gray-500">Аравт: ${r.group}</p>
+              </div>
+              ${right}
           </div>
-          ${right}
-        </div>
-
-        <div class="mt-2 flex gap-2 flex-wrap">
-          ${timesHtml}
-        </div>
+          <div class="mt-2 flex gap-2 flex-wrap">
+              ${badges}
+          </div>
       </div>
-    `;
+      `;
   });
 }
 
