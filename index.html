@@ -5,33 +5,69 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Attendance</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <meta name="theme-color" content="#2563eb">
 </head>
 
 <body class="bg-gray-100 min-h-screen">
 
-    <div id="appPage" class="max-w-md mx-auto p-4 space-y-4">
+    <!-- ================= LOGIN ================= -->
+    <div id="loginPage" class="min-h-screen flex items-center justify-center px-4">
+        <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow">
+            <h1 class="text-xl font-semibold text-center mb-6">📱 Нэвтрэх</h1>
+
+            <input id="phoneInput" type="tel" placeholder="Утасны дугаар"
+                class="w-full p-3 border rounded-xl mb-4 text-lg" />
+
+            <button id="btnLogin" onclick="login()" class="w-full bg-blue-600 text-white py-3 rounded-xl text-lg">
+                Нэвтрэх
+            </button>
+
+            <p id="loginError" class="hidden text-red-500 text-center mt-3">
+                Утасны дугаар бүртгэлгүй байна
+            </p>
+        </div>
+    </div>
+
+    <!-- ================= APP ================= -->
+    <div id="appPage" class="hidden max-w-md mx-auto p-4 space-y-4">
 
         <!-- Header -->
         <div class="flex justify-between items-center">
             <div>
-                <p id="userName" class="font-semibold text-lg">Админ</p>
-                <p id="userGroup" class="text-sm text-gray-500">Аравт: 0</p>
+                <p id="userName" class="font-semibold text-lg"></p>
+                <p id="userGroup" class="text-sm text-gray-500"></p>
             </div>
+            <button onclick="logout()" class="text-red-500 text-sm">Гарах</button>
         </div>
 
         <!-- Mode buttons -->
         <div class="flex gap-2">
-            <button id="btnDay" onclick="setMode('day')" class="mode-btn active">Өдөр</button>
+            <button id="btnDay" onclick="setMode('day')" class="mode-btn mode-active">Өдөр</button>
             <button id="btnWeek" onclick="setMode('week')" class="mode-btn">7 хоног</button>
             <button id="btnMonth" onclick="setMode('month')" class="mode-btn">Сар</button>
         </div>
 
         <!-- Controls -->
         <div class="bg-white p-4 rounded-2xl shadow space-y-3">
-            <input id="dateInput" type="date" class="w-full p-3 border rounded-xl" />
-            <input id="groupInput" type="number" class="w-full p-3 border rounded-xl" />
-            <button id="btnLoad" onclick="loadAttendance()" class="w-full bg-blue-600 text-white py-3 rounded-xl">
+            <!-- Day -->
+            <input id="dateDay" type="date" class="w-full p-3 border rounded-xl text-lg cursor-pointer"
+                onclick="openPicker(this)" />
+
+            <!-- Week -->
+            <input id="dateWeek" type="date" class="hidden w-full p-3 border rounded-xl text-lg cursor-pointer"
+                onclick="openPicker(this)" />
+
+            <!-- Month -->
+            <input id="dateMonth" type="month" class="hidden w-full p-3 border rounded-xl text-lg cursor-pointer"
+                onclick="openPicker(this)" />
+
+            <input id="groupInput" type="number" placeholder="Аравт" class="w-full p-3 border rounded-xl text-lg" />
+
+            <button id="btnLoad" onclick="loadAttendance()"
+                class="w-full bg-blue-600 text-white py-3 rounded-xl text-lg">
                 Харах
             </button>
         </div>
@@ -41,141 +77,253 @@
             ⏳ Ачааллаж байна...
         </div>
 
-        <!-- Result -->
+        <!-- Results -->
         <div id="result" class="space-y-3"></div>
     </div>
 
     <style>
         .mode-btn {
             flex: 1;
-            padding: 0.5rem;
-            border-radius: 0.75rem;
+            padding: 0.6rem;
+            border-radius: 0.9rem;
             background: #e5e7eb;
+            color: #111827;
         }
 
-        .mode-btn.active {
-            background: #2563eb;
-            color: white;
+        .mode-active {
+            background: #2563eb !important;
+            color: #fff !important;
         }
 
         .card-absent {
-            opacity: 0.5;
+            opacity: .55;
         }
     </style>
 
     <script>
+        /* ================= CONFIG ================= */
         const API_URL =
             "https://script.google.com/macros/s/AKfycbyNhXSZIr5YHR-iZ_bpNqZneL61EKOrtJJlwcj43GmTjiYyGf_rgmUha7_cosGWxgCgcg/exec";
 
         let viewMode = "day";
 
+        /* ================= UTILS ================= */
+        function openPicker(el) {
+            if (el.showPicker) el.showPicker();
+            else el.focus();
+        }
+
+        function setLoading(on) {
+            loading.classList.toggle("hidden", !on);
+            btnLoad.disabled = on;
+            btnLoad.classList.toggle("opacity-50", on);
+            btnLogin.disabled = on;
+            btnLogin.classList.toggle("opacity-50", on);
+        }
+
+        function isMonday(dateStr) {
+            return new Date(dateStr).getDay() === 1;
+        }
+
+        function getUser() {
+            return JSON.parse(localStorage.getItem("user") || "null");
+        }
+
+        /* ================= LOGIN ================= */
+        function login() {
+            const phone = phoneInput.value.trim();
+            if (!phone) return;
+
+            setLoading(true);
+            loginError.classList.add("hidden");
+
+            fetch(`${API_URL}?action=login&phone=${encodeURIComponent(phone)}`)
+                .then(r => r.json())
+                .then(res => {
+                    if (!res.success) {
+                        loginError.classList.remove("hidden");
+                        return;
+                    }
+                    localStorage.setItem("user", JSON.stringify(res));
+                    showApp();
+                })
+                .catch(() => loginError.classList.remove("hidden"))
+                .finally(() => setLoading(false));
+        }
+
+        function logout() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        /* ================= INIT ================= */
+        function showApp() {
+            const user = getUser();
+            if (!user) return;
+
+            loginPage.classList.add("hidden");
+            appPage.classList.remove("hidden");
+
+            userName.innerText = user.name;
+            userGroup.innerText = `Аравт: ${user.group}`;
+
+            // Group input эрх
+            groupInput.value = user.group;
+            if (Number(user.group) === 0) {
+                groupInput.disabled = false;          // Админ
+            } else {
+                groupInput.disabled = true;           // Энгийн хэрэглэгч
+            }
+        }
+
+        window.onload = () => {
+            if (getUser()) showApp();
+        };
+
         /* ================= MODE ================= */
-        function setMode(m) {
-            viewMode = m;
-            ["day", "week", "month"].forEach(x => {
-                document.getElementById("btn" + x.charAt(0).toUpperCase() + x.slice(1))
-                    .classList.toggle("active", x === m);
-            });
+        function setMode(mode) {
+            viewMode = mode;
+
+            btnDay.classList.toggle("mode-active", mode === "day");
+            btnWeek.classList.toggle("mode-active", mode === "week");
+            btnMonth.classList.toggle("mode-active", mode === "month");
+
+            dateDay.classList.add("hidden");
+            dateWeek.classList.add("hidden");
+            dateMonth.classList.add("hidden");
+
+            if (mode === "day") dateDay.classList.remove("hidden");
+            if (mode === "week") dateWeek.classList.remove("hidden");
+            if (mode === "month") dateMonth.classList.remove("hidden");
         }
 
         /* ================= LOAD ================= */
         async function loadAttendance() {
-            const date = dateInput.value;
-            const group = groupInput.value || 0;
-            if (!date) return alert("Огноо сонгоно уу");
+            const user = getUser();
+            if (!user) return;
 
-            toggleLoading(true);
+            let date = "";
+            let action = "";
+            const group = Number(groupInput.value || 0);
 
-            const action =
-                viewMode === "day" ? "attendanceByDay" :
-                    viewMode === "week" ? "attendanceByWeek" :
-                        "attendanceByMonth";
+            // эрх шалгалт: энгийн хэрэглэгч бол өөр group-оо л харах
+            if (Number(user.group) !== 0 && group !== Number(user.group)) {
+                alert("Та зөвхөн өөрийн аравтын ирцийг харах боломжтой.");
+                groupInput.value = user.group;
+                return;
+            }
+
+            if (viewMode === "day") {
+                date = dateDay.value;
+                action = "attendanceByDay";
+            }
+            if (viewMode === "week") {
+                date = dateWeek.value;
+                if (date && !isMonday(date)) {
+                    alert("7 хоногийн Даваа гаригийг сонгоно уу");
+                    return;
+                }
+                action = "attendanceByWeek";
+            }
+            if (viewMode === "month") {
+                const m = dateMonth.value; // yyyy-MM
+                date = m ? `${m}-01` : "";
+                action = "attendanceByMonth";
+            }
+
+            if (!date) {
+                alert("Огноо сонгоно уу");
+                return;
+            }
+
+            setLoading(true);
+            result.innerHTML = "";
 
             try {
                 const res = await fetch(`${API_URL}?action=${action}&date=${date}&group=${group}`);
-                const rows = await res.json();
+                const data = await res.json();
 
-                if (viewMode === "day") renderDayWithAbsent(rows, group);
-                else renderSummary(rows);
+                if (viewMode === "day") {
+                    await renderDayWithAbsent(data, group);
+                } else {
+                    renderSummarySorted(data);
+                }
 
             } catch (e) {
-                alert("Алдаа гарлаа");
+                result.innerHTML = "<p class='text-center text-red-500'>Алдаа гарлаа</p>";
             } finally {
-                toggleLoading(false);
+                setLoading(false);
             }
         }
 
-        /* ================= LOADING ================= */
-        function toggleLoading(on) {
-            loading.classList.toggle("hidden", !on);
-            btnLoad.disabled = on;
-            btnLoad.classList.toggle("opacity-50", on);
-        }
+        /* ================= SORT + ABSENT (DAY) ================= */
+        async function renderDayWithAbsent(attendedRows, group) {
+            // People list (шинэ endpoint)
+            const peopleRes = await fetch(`${API_URL}?action=people&group=${group}`);
+            const people = await peopleRes.json(); // [{name,group},...]
 
-        /* ================= DAY RENDER (WITH ABSENT) ================= */
-        async function renderDayWithAbsent(attended, group) {
-            // 1. people list
-            const peopleRes = await fetch(`${API_URL}?action=attendanceByDay&date=2099-01-01&group=${group}`);
-            const allPeople = await peopleRes.json();
+            // attendance map
+            const attMap = {};
+            (attendedRows || []).forEach(r => attMap[r.name] = r);
 
-            const map = {};
-            attended.forEach(p => map[p.name] = p);
-
-            const merged = allPeople.map(p => {
-                if (map[p.name]) return { ...map[p.name], present: true };
+            // merge: байхгүй бол ирээгүй
+            const merged = people.map(p => {
+                const hit = attMap[p.name];
+                if (hit) return { ...hit, present: true };
                 return { name: p.name, group: p.group, times: [], present: false };
             });
 
-            // sort by group then name
-            merged.sort((a, b) =>
-                a.group !== b.group
-                    ? a.group - b.group
-                    : a.name.localeCompare(b.name)
-            );
+            // sort group -> name
+            merged.sort((a, b) => (a.group - b.group) || String(a.name).localeCompare(String(b.name)));
 
-            renderDay(merged);
+            renderDayCards(merged);
         }
 
-        /* ================= DAY ================= */
-        function renderDay(rows) {
+        function renderDayCards(rows) {
+            if (!rows || rows.length === 0) {
+                result.innerHTML = "<p class='text-center text-gray-500'>Мэдээлэл олдсонгүй</p>";
+                return;
+            }
+
             result.innerHTML = "";
             rows.forEach(r => {
+                const timesHtml = (r.times || [])
+                    .map(t => `<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm">${t}</span>`)
+                    .join(" ");
+
                 result.innerHTML += `
-      <div class="bg-white p-4 rounded-2xl shadow ${r.present ? "" : "card-absent"}">
+      <div class="bg-white p-4 rounded-2xl shadow space-y-2 ${r.present ? "" : "card-absent"}">
         <div class="flex justify-between items-center">
           <div>
             <p class="font-medium">${r.name}</p>
-            <p class="text-sm text-gray-500">Аравт ${r.group}</p>
+            <p class="text-sm text-gray-500">Аравт: ${r.group}</p>
           </div>
           <div class="text-xl font-bold ${r.present ? "text-blue-600" : "text-red-500"}">
-            ${r.present ? r.times.length : "Ирээгүй"}
+            ${r.present ? (r.times?.length || 0) : "Ирээгүй"}
           </div>
         </div>
-
-        ${r.present
-                        ? `<div class="flex gap-2 mt-2">
-                ${r.times.map(t => `<span class="bg-blue-100 px-2 rounded">${t}</span>`).join("")}
-               </div>`
-                        : ""
-                    }
+        ${r.present ? `<div class="flex gap-2 flex-wrap">${timesHtml}</div>` : ""}
       </div>
     `;
             });
         }
 
-        /* ================= SUMMARY ================= */
-        function renderSummary(rows) {
-            rows.sort((a, b) =>
-                a.group !== b.group ? a.group - b.group : a.name.localeCompare(b.name)
-            );
+        /* ================= SUMMARY (WEEK/MONTH) ================= */
+        function renderSummarySorted(rows) {
+            if (!rows || rows.length === 0) {
+                result.innerHTML = "<p class='text-center text-gray-500'>Мэдээлэл олдсонгүй</p>";
+                return;
+            }
+
+            rows.sort((a, b) => (Number(a.group || 0) - Number(b.group || 0)) || String(a.name).localeCompare(String(b.name)));
 
             result.innerHTML = "";
             rows.forEach(r => {
                 result.innerHTML += `
-      <div class="bg-white p-4 rounded-2xl shadow flex justify-between">
+      <div class="bg-white p-4 rounded-2xl shadow flex justify-between items-center">
         <div>
           <p class="font-medium">${r.name}</p>
-          <p class="text-sm text-gray-500">Аравт ${r.group}</p>
+          <p class="text-sm text-gray-500">Аравт: ${r.group}</p>
         </div>
         <div class="text-xl font-bold text-blue-600">${r.count}</div>
       </div>
