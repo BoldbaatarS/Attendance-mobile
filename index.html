@@ -219,7 +219,11 @@
                     alert("Огноо сонгоно уу");
                     return;
                 }
-                date = new Date(raw).toISOString().slice(0, 10); // yyyy-MM-dd
+
+                // locale-safe normalize (2026.01.05 → 2026-01-05)
+                const p = raw.split(/[.\-\/]/);
+                date = `${p[0]}-${p[1].padStart(2, "0")}-${p[2].padStart(2, "0")}`;
+
                 action = "attendanceByDay";
             }
             if (viewMode === "week") {
