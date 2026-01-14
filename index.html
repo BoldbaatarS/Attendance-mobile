@@ -471,10 +471,14 @@
 
             const isAdmin = Number(group) === 0;
 
+            // ❗ Аравт 0-ийг бүр мөсөн хасна
+            const filtered = merged.filter(x => Number(x.group) !== 0);
+
             // ================= ADMIN → АРАВТААР =================
             if (isAdmin) {
                 const byGroup = {};
-                merged.forEach(x => {
+
+                filtered.forEach(x => {
                     const g = Number(x.group);
                     byGroup[g] = byGroup[g] || { present: 0, absent: 0 };
                     if (x.present) byGroup[g].present++;
@@ -482,16 +486,14 @@
                 });
 
                 const groups = Object.keys(byGroup).map(Number).sort((a, b) => a - b);
-                const present = groups.map(g => byGroup[g].present);
-                const absent = groups.map(g => byGroup[g].absent);
 
                 chartInstance = new Chart(ctx, {
                     type: "bar",
                     data: {
                         labels: groups.map(g => `Аравт ${g}`),
                         datasets: [
-                            { label: "Ирсэн", data: present },
-                            { label: "Ирээгүй", data: absent }
+                            { label: "Ирсэн", data: groups.map(g => byGroup[g].present) },
+                            { label: "Ирээгүй", data: groups.map(g => byGroup[g].absent) }
                         ]
                     },
                     options: {
@@ -501,21 +503,18 @@
                         scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
                     }
                 });
-
                 return;
             }
 
             // ================= USER → ХҮН ТУС БҮР =================
-            const labels = merged.map(x => x.name);
-            const values = merged.map(x => x.present ? x.times.length : 0);
+            const labels = filtered.map(x => x.name);
+            const values = filtered.map(x => x.present ? x.times.length : 0);
 
             chartInstance = new Chart(ctx, {
                 type: "bar",
                 data: {
                     labels,
-                    datasets: [
-                        { label: "Ирсэн тоо", data: values }
-                    ]
+                    datasets: [{ label: "Ирсэн тоо", data: values }]
                 },
                 options: {
                     plugins: {
@@ -532,22 +531,24 @@
 
             const isAdmin = Number(group) === 0;
 
+            // ❗ Аравт 0-ийг хасна
+            const filtered = rows.filter(r => Number(r.group) !== 0);
+
             // ================= ADMIN → АРАВТААР =================
             if (isAdmin) {
                 const byGroup = {};
-                rows.forEach(r => {
-                    const g = Number(r.group || 0);
+                filtered.forEach(r => {
+                    const g = Number(r.group);
                     byGroup[g] = (byGroup[g] || 0) + Number(r.count || 0);
                 });
 
                 const groups = Object.keys(byGroup).map(Number).sort((a, b) => a - b);
-                const totals = groups.map(g => byGroup[g]);
 
                 chartInstance = new Chart(ctx, {
                     type: "bar",
                     data: {
                         labels: groups.map(g => `Аравт ${g}`),
-                        datasets: [{ label: "Нийт ирц", data: totals }]
+                        datasets: [{ label: "Нийт ирц", data: groups.map(g => byGroup[g]) }]
                     },
                     options: {
                         plugins: {
@@ -559,19 +560,15 @@
                         scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
                     }
                 });
-
                 return;
             }
 
             // ================= USER → ХҮН ТУС БҮР =================
-            const labels = rows.map(r => r.name);
-            const values = rows.map(r => Number(r.count || 0));
-
             chartInstance = new Chart(ctx, {
                 type: "bar",
                 data: {
-                    labels,
-                    datasets: [{ label: "Нийт ирц", data: values }]
+                    labels: filtered.map(r => r.name),
+                    datasets: [{ label: "Нийт ирц", data: filtered.map(r => Number(r.count || 0)) }]
                 },
                 options: {
                     plugins: {
