@@ -1,103 +1,71 @@
-/* ================= CHART RULES =================
-           - Group 0 is NEVER shown in charts
-           - Admin (group=0): chart by group (excluding 0)
-           - User (group!=0): chart by person (excluding group 0 anyway)
-        */
-function drawDayCharts(merged, date, effectiveGroup) {
-    destroyChart();
-    const ctx = document.getElementById("chartCanvas");
-    const isAdmin = Number(effectiveGroup) === 0;
+// js/charts.js
+let chartInstance = null;
 
-    // never show group 0 in charts
-    const filtered = (merged || []).filter(x => Number(x.group) !== 0);
-
-    if (isAdmin) {
-        const byGroup = {};
-        filtered.forEach(x => {
-            const g = Number(x.group);
-            byGroup[g] = byGroup[g] || { present: 0, absent: 0 };
-            if (x.present) byGroup[g].present++;
-            else byGroup[g].absent++;
-        });
-
-        const groups = Object.keys(byGroup).map(Number).sort((a, b) => a - b);
-
-        chartInstance = new Chart(ctx, {
-            type: "bar",
-            data: {
-                labels: groups.map(g => `Аравт ${g}`),
-                datasets: [
-                    { label: "Ирсэн", data: groups.map(g => byGroup[g].present) },
-                    { label: "Ирээгүй", data: groups.map(g => byGroup[g].absent) }
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: { title: { display: true, text: `Өдөр (${date}) – Аравтаар` } },
-                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-            }
-        });
-        return;
+export function destroyChart() {
+    if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
     }
-
-    chartInstance = new Chart(ctx, {
-        type: "bar",
-        data: {
-            labels: filtered.map(x => x.name),
-            datasets: [
-                { label: "Ирсэн тоо", data: filtered.map(x => x.present ? (x.times || []).length : 0) }
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: { title: { display: true, text: `Өдөр (${date}) – Хүн тус бүр` } },
-            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-        }
-    });
 }
 
-function drawSummaryCharts(rows, mode, date, effectiveGroup) {
+export function drawCharts(rows, state) {
     destroyChart();
+
     const ctx = document.getElementById("chartCanvas");
-    const isAdmin = Number(effectiveGroup) === 0;
+    if (!ctx) return;
 
-    // never show group 0
+    // group 0-г хэзээ ч харуулахгүй
     const filtered = (rows || []).filter(r => Number(r.group) !== 0);
+    if (filtered.length === 0) return;
 
-    if (isAdmin) {
-        const byGroup = {};
-        filtered.forEach(r => {
-            const g = Number(r.group);
-            byGroup[g] = (byGroup[g] || 0) + Number(r.count || 0);
-        });
+    const isAdmin = Number(state.user.group) === 0;
 
-        const groups = Object.keys(byGroup).map(Number).sort((a, b) => a - b);
-
+    // 👤 Хэрэглэгч → хүн тус бүр
+    if (!isAdmin) {
         chartInstance = new Chart(ctx, {
             type: "bar",
             data: {
-                labels: groups.map(g => `Аравт ${g}`),
-                datasets: [{ label: "Нийт ирц", data: groups.map(g => byGroup[g]) }]
+                labels: filtered.map(r => r.name),
+                datasets: [{
+                    label: "Ирц",
+                    data: filtered.map(r => Number(r.count || r.times?.length || 0)),
+                    backgroundColor: "#2563eb"
+                }]
             },
             options: {
                 responsive: true,
-                plugins: { title: { display: true, text: `${mode === "week" ? "7 хоног" : "Сар"} (${date}) – Аравтаар` } },
-                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 } }
+                }
             }
         });
         return;
     }
 
+    // 👑 Админ → аравтаар
+    const byGroup = {};
+    filtered.forEach(r => {
+        const g = r.group;
+        byGroup[g] = (byGroup[g] || 0) + Number(r.count || r.times?.length || 0);
+    });
+
+    const groups = Object.keys(byGroup).sort((a, b) => a - b);
+
     chartInstance = new Chart(ctx, {
         type: "bar",
         data: {
-            labels: filtered.map(r => r.name),
-            datasets: [{ label: "Нийт ирц", data: filtered.map(r => Number(r.count || 0)) }]
+            labels: groups.map(g => `Аравт ${g}`),
+            datasets: [{
+                label: "Нийт ирц",
+                data: groups.map(g => byGroup[g]),
+                backgroundColor: "#16a34a"
+            }]
         },
         options: {
             responsive: true,
-            plugins: { title: { display: true, text: `${mode === "week" ? "7 хоног" : "Сар"} (${date}) – Хүн тус бүр` } },
-            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 } }
+            }
         }
     });
 }

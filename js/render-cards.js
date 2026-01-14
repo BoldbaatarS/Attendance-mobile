@@ -1,60 +1,103 @@
-// js/render-card.js
-// Нэг card үүсгэж HTML string буцаана (Day болон Summary хоёуланд ашиглана)
-
-function escapeHtml(str) {
-    return String(str ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
+// js/render-cards.js
 
 /**
- * @param {{
- *  name: string,
- *  group: number|string,
- *  present?: boolean,        // day mode
- *  times?: string[],         // day mode
- *  count?: number            // week/month summary
- * }} r
- * @param {{ mode: "day"|"summary" }} opt
+ * =========================
+ * ӨДРИЙН ИРЦ (ИРСЭН + ИРЭЭГҮЙ)
+ * rows: [{ name, group, times:[], present:boolean }]
+ * =========================
  */
-export function renderCard(r, opt = { mode: "day" }) {
-    const name = escapeHtml(r?.name);
-    const group = escapeHtml(r?.group ?? "");
+export function renderDayCards(rows) {
+  const result = document.getElementById("result");
+  if (!result) return;
 
-    const base = `
+  result.innerHTML = "";
+
+  if (!rows || rows.length === 0) {
+    result.innerHTML =
+      `<p class="text-center text-gray-500 dark:text-gray-400">
+        Мэдээлэл олдсонгүй
+      </p>`;
+    return;
+  }
+
+  rows.forEach(r => {
+    const right = r.present
+      ? `<div class="text-xl font-bold text-blue-600">
+           ${(r.times || []).length}
+         </div>`
+      : `<div class="text-sm font-semibold text-red-500">
+           Ирэээгүй
+         </div>`;
+
+    const timesHtml = (r.times || []).map(t => `
+      <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900/40
+                   rounded-lg text-sm">
+        ${t}
+      </span>
+    `).join("");
+
+    result.innerHTML += `
       <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow">
         <div class="flex justify-between items-center">
           <div>
-            <p class="font-medium">${name}</p>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Аравт: ${group}</p>
+            <p class="font-medium">${r.name}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              Аравт: ${r.group}
+            </p>
           </div>
-          __RIGHT__
+          ${right}
         </div>
-        __BOTTOM__
+
+        <div class="mt-2 flex gap-2 flex-wrap">
+          ${timesHtml}
+        </div>
       </div>
     `;
+  });
+}
 
-    if (opt.mode === "summary") {
-        const count = Number(r?.count ?? 0);
-        const right = `<div class="text-xl font-bold text-blue-600">${count}</div>`;
-        return base.replace("__RIGHT__", right).replace("__BOTTOM__", "");
-    }
+/**
+ * =========================
+ * 7 ХОНОГ / САР — НИЙТ ДҮН
+ * rows: [{ name, group, count }]
+ * =========================
+ */
+export function renderSummarySorted(rows) {
+  const result = document.getElementById("result");
+  if (!result) return;
 
-    // day
-    const present = !!r?.present;
-    const times = Array.isArray(r?.times) ? r.times : [];
-    const right = present
-        ? `<div class="text-xl font-bold text-blue-600">${times.length}</div>`
-        : `<div class="text-sm font-semibold text-red-500">Ирээгүй</div>`;
+  result.innerHTML = "";
 
-    const badges = times
-        .map(t => `<span class="px-2 py-1 bg-blue-100 dark:bg-blue-900/40 rounded-lg text-sm">${escapeHtml(t)}</span>`)
-        .join("");
+  if (!rows || rows.length === 0) {
+    result.innerHTML =
+      `<p class="text-center text-gray-500 dark:text-gray-400">
+        Мэдээлэл олдсонгүй
+      </p>`;
+    return;
+  }
 
-    const bottom = badges ? `<div class="mt-2 flex gap-2 flex-wrap">${badges}</div>` : "";
-
-    return base.replace("__RIGHT__", right).replace("__BOTTOM__", bottom);
+  // Аравтаар → нэрээр эрэмбэлэх
+  rows
+    .slice()
+    .sort(
+      (a, b) =>
+        Number(a.group) - Number(b.group) ||
+        String(a.name).localeCompare(String(b.name))
+    )
+    .forEach(r => {
+      result.innerHTML += `
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow
+                    flex justify-between items-center">
+          <div>
+            <p class="font-medium">${r.name}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              Аравт: ${r.group}
+            </p>
+          </div>
+          <div class="text-xl font-bold text-blue-600">
+            ${Number(r.count || 0)}
+          </div>
+        </div>
+      `;
+    });
 }

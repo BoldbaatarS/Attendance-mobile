@@ -3,7 +3,7 @@ import { initApp, loadAttendance, setMode, toggleChart } from "./app.js";
 import { login, logout } from "./auth.js";
 import { initTheme, toggleTheme } from "./theme.js";
 
-// ⬇⬇⬇ ЭНЭ БОЛ ЧУХАЛ ⬇⬇⬇
+/* 👉 HTML inline onclick-д зориулж window-д bind */
 window.login = login;
 window.logout = logout;
 window.loadAttendance = loadAttendance;
