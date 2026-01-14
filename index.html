@@ -214,7 +214,12 @@
             }
 
             if (viewMode === "day") {
-                date = dateDay.value;
+                const raw = dateDay.value;
+                if (!raw) {
+                    alert("Огноо сонгоно уу");
+                    return;
+                }
+                date = new Date(raw).toISOString().slice(0, 10); // yyyy-MM-dd
                 action = "attendanceByDay";
             }
             if (viewMode === "week") {
