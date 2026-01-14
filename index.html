@@ -466,82 +466,121 @@
         }
 
         function drawDayCharts(merged, date, group) {
-            // 1) overall present/absent
-            const present = merged.filter(x => x.present).length;
-            const absent = merged.filter(x => !x.present).length;
-
-            // 2) group breakdown
-            const byGroup = {};
-            merged.forEach(x => {
-                const g = Number(x.group);
-                byGroup[g] = byGroup[g] || { present: 0, absent: 0 };
-                if (x.present) byGroup[g].present++;
-                else byGroup[g].absent++;
-            });
-
-            const groups = Object.keys(byGroup).map(Number).sort((a, b) => a - b);
-            const gPresent = groups.map(g => byGroup[g].present);
-            const gAbsent = groups.map(g => byGroup[g].absent);
-
             destroyChart();
             const ctx = document.getElementById("chartCanvas");
+
+            const isAdmin = Number(group) === 0;
+
+            // ================= ADMIN → АРАВТААР =================
+            if (isAdmin) {
+                const byGroup = {};
+                merged.forEach(x => {
+                    const g = Number(x.group);
+                    byGroup[g] = byGroup[g] || { present: 0, absent: 0 };
+                    if (x.present) byGroup[g].present++;
+                    else byGroup[g].absent++;
+                });
+
+                const groups = Object.keys(byGroup).map(Number).sort((a, b) => a - b);
+                const present = groups.map(g => byGroup[g].present);
+                const absent = groups.map(g => byGroup[g].absent);
+
+                chartInstance = new Chart(ctx, {
+                    type: "bar",
+                    data: {
+                        labels: groups.map(g => `Аравт ${g}`),
+                        datasets: [
+                            { label: "Ирсэн", data: present },
+                            { label: "Ирээгүй", data: absent }
+                        ]
+                    },
+                    options: {
+                        plugins: {
+                            title: { display: true, text: `Өдөр (${date}) – Аравтаар` }
+                        },
+                        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                    }
+                });
+
+                return;
+            }
+
+            // ================= USER → ХҮН ТУС БҮР =================
+            const labels = merged.map(x => x.name);
+            const values = merged.map(x => x.present ? x.times.length : 0);
 
             chartInstance = new Chart(ctx, {
                 type: "bar",
                 data: {
-                    labels: ["Нийт", ...groups.map(g => `Аравт ${g}`)],
+                    labels,
                     datasets: [
-                        { label: "Ирсэн", data: [present, ...gPresent] },
-                        { label: "Ирээгүй", data: [absent, ...gAbsent] },
+                        { label: "Ирсэн тоо", data: values }
                     ]
                 },
                 options: {
-                    responsive: true,
                     plugins: {
-                        title: { display: true, text: `Өдөр (${date}) - group ${group}` },
-                        legend: { display: true }
+                        title: { display: true, text: `Өдөр (${date}) – Хүн тус бүр` }
                     },
-                    scales: {
-                        y: { beginAtZero: true, ticks: { precision: 0 } }
-                    }
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
                 }
             });
         }
 
         function drawSummaryCharts(rows, mode, date, group) {
-            // rows: [{name,count,group}]
-            // Chart: group totals
-            const byGroup = {};
-            rows.forEach(r => {
-                const g = Number(r.group || 0);
-                byGroup[g] = (byGroup[g] || 0) + Number(r.count || 0);
-            });
-
-            const groups = Object.keys(byGroup).map(Number).sort((a, b) => a - b);
-            const totals = groups.map(g => byGroup[g]);
-
             destroyChart();
             const ctx = document.getElementById("chartCanvas");
 
-            const title = mode === "week"
-                ? `7 хоног (${date}) - group ${group}`
-                : `Сар (${date}) - group ${group}`;
+            const isAdmin = Number(group) === 0;
+
+            // ================= ADMIN → АРАВТААР =================
+            if (isAdmin) {
+                const byGroup = {};
+                rows.forEach(r => {
+                    const g = Number(r.group || 0);
+                    byGroup[g] = (byGroup[g] || 0) + Number(r.count || 0);
+                });
+
+                const groups = Object.keys(byGroup).map(Number).sort((a, b) => a - b);
+                const totals = groups.map(g => byGroup[g]);
+
+                chartInstance = new Chart(ctx, {
+                    type: "bar",
+                    data: {
+                        labels: groups.map(g => `Аравт ${g}`),
+                        datasets: [{ label: "Нийт ирц", data: totals }]
+                    },
+                    options: {
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: `${mode === "week" ? "7 хоног" : "Сар"} (${date}) – Аравтаар`
+                            }
+                        },
+                        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                    }
+                });
+
+                return;
+            }
+
+            // ================= USER → ХҮН ТУС БҮР =================
+            const labels = rows.map(r => r.name);
+            const values = rows.map(r => Number(r.count || 0));
 
             chartInstance = new Chart(ctx, {
                 type: "bar",
                 data: {
-                    labels: groups.map(g => `Аравт ${g}`),
-                    datasets: [{ label: "Нийт ирц (count)", data: totals }]
+                    labels,
+                    datasets: [{ label: "Нийт ирц", data: values }]
                 },
                 options: {
-                    responsive: true,
                     plugins: {
-                        title: { display: true, text: title },
-                        legend: { display: true }
+                        title: {
+                            display: true,
+                            text: `${mode === "week" ? "7 хоног" : "Сар"} (${date}) – Хүн тус бүр`
+                        }
                     },
-                    scales: {
-                        y: { beginAtZero: true, ticks: { precision: 0 } }
-                    }
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
                 }
             });
         }
