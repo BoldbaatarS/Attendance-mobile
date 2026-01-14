@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="mn">
+<html lang="mn" class="transition-colors duration-300">
 
 <head>
     <meta charset="UTF-8" />
@@ -17,22 +17,24 @@
     <meta name="theme-color" content="#2563eb" />
 </head>
 
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
 
     <!-- ================= LOGIN ================= -->
     <div id="loginPage" class="min-h-screen flex items-center justify-center px-4">
-        <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow">
+        <div class="bg-white dark:bg-gray-800 w-full max-w-sm p-6 rounded-2xl shadow">
             <h1 class="text-xl font-semibold text-center mb-6">📱 Нэвтрэх</h1>
 
-            <input id="phoneInput" type="tel" placeholder="Утасны дугаар"
-                class="w-full p-3 border rounded-xl mb-4 text-lg" />
+            <input id="phoneInput" type="tel" placeholder="Утасны дугаар" class="w-full p-3 border rounded-xl mb-4 text-lg
+             bg-white dark:bg-gray-700
+             text-gray-900 dark:text-gray-100
+             border-gray-300 dark:border-gray-600" />
 
-            <button id="loginBtn" onclick="login()"
-                class="w-full bg-blue-600 text-white py-3 rounded-xl text-lg flex items-center justify-center gap-2 disabled:opacity-70">
+            <button id="loginBtn" onclick="login()" class="w-full bg-blue-600 text-white py-3 rounded-xl text-lg
+             flex items-center justify-center gap-2
+             disabled:opacity-70">
                 <span id="loginBtnText">Нэвтрэх</span>
-
-                <!-- Tailwind animate-spin SVG spinner -->
-                <svg id="loginSpinner" class="hidden h-5 w-5 animate-spin" viewBox="0 0 24 24" aria-hidden="true">
+                <!-- Spinner -->
+                <svg id="loginSpinner" class="hidden h-5 w-5 animate-spin" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" fill="none" stroke="currentColor"
                         stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
@@ -52,41 +54,49 @@
         <div class="flex justify-between items-center mb-4">
             <div>
                 <p id="userName" class="font-semibold text-lg"></p>
-                <p id="userGroup" class="text-sm text-gray-500"></p>
+                <p id="userGroup" class="text-sm text-gray-500 dark:text-gray-400"></p>
             </div>
-            <button onclick="logout()" class="text-red-500 text-sm">Гарах</button>
+
+            <div class="flex items-center gap-2">
+                <!-- Theme toggle -->
+                <button id="themeToggle" onclick="toggleTheme()" class="px-3 py-1 rounded-lg border
+               bg-white text-gray-800
+               dark:bg-gray-800 dark:text-gray-100
+               border-gray-300 dark:border-gray-600" title="Theme солих">
+                    🌙
+                </button>
+
+                <button onclick="logout()" class="text-red-500 text-sm">
+                    Гарах
+                </button>
+            </div>
         </div>
 
-        <!-- MODE BUTTONS -->
+        <!-- MODE -->
         <div class="flex gap-2 mb-3">
-            <button id="btnDay" class="mode-btn bg-blue-600 text-white px-4 py-2 rounded-xl"
+            <button id="btnDay" class="bg-blue-600 text-white px-4 py-2 rounded-xl"
                 onclick="setMode('day')">Өдөр</button>
-            <button id="btnWeek" class="mode-btn bg-gray-200 px-4 py-2 rounded-xl" onclick="setMode('week')">7
+            <button id="btnWeek" class="bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-xl" onclick="setMode('week')">7
                 хоног</button>
-            <button id="btnMonth" class="mode-btn bg-gray-200 px-4 py-2 rounded-xl"
+            <button id="btnMonth" class="bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-xl"
                 onclick="setMode('month')">Сар</button>
         </div>
 
-        <!-- SETTINGS -->
-        <div class="flex items-center justify-between mb-3">
-            <label class="flex items-center gap-2 text-sm text-gray-700">
-                <input id="notifToggle" type="checkbox" class="accent-blue-600" />
-                🔔 Мэдэгдэл
-            </label>
+        <!-- FILTER -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow space-y-3">
+            <input id="dateDay" type="date" class="w-full p-3 border rounded-xl
+                  bg-white dark:bg-gray-700
+                  border-gray-300 dark:border-gray-600" />
+            <input id="dateWeek" type="week" class="hidden w-full p-3 border rounded-xl
+                  bg-white dark:bg-gray-700
+                  border-gray-300 dark:border-gray-600" />
+            <input id="dateMonth" type="month" class="hidden w-full p-3 border rounded-xl
+                  bg-white dark:bg-gray-700
+                  border-gray-300 dark:border-gray-600" />
 
-            <label class="flex items-center gap-2 text-sm text-gray-700">
-                <input id="reminderToggle" type="checkbox" class="accent-blue-600" />
-                ⏰ 05:00/20:00 сануулах
-            </label>
-        </div>
-
-        <!-- FILTERS -->
-        <div class="bg-white p-4 rounded-2xl shadow space-y-3">
-            <input id="dateDay" type="date" class="w-full p-3 border rounded-xl" />
-            <input id="dateWeek" type="week" class="hidden w-full p-3 border rounded-xl" />
-            <input id="dateMonth" type="month" class="hidden w-full p-3 border rounded-xl" />
-
-            <input id="groupInput" type="number" class="w-full p-3 border rounded-xl" />
+            <input id="groupInput" type="number" class="w-full p-3 border rounded-xl
+                  bg-white dark:bg-gray-700
+                  border-gray-300 dark:border-gray-600" />
 
             <button onclick="loadAttendance()" class="w-full bg-blue-600 text-white py-3 rounded-xl">
                 Харах
@@ -94,22 +104,15 @@
         </div>
 
         <!-- CHART -->
-        <div class="mt-4 bg-white p-4 rounded-2xl shadow">
-            <div class="flex justify-between items-center mb-2">
-                <p class="font-semibold">📊 График</p>
-                <button id="toggleChartBtn" class="text-sm text-blue-600" onclick="toggleChart()">Нуух</button>
-            </div>
-            <div id="chartWrap">
-                <canvas id="chartCanvas" height="180"></canvas>
-                <p class="text-xs text-gray-500 mt-2">
-                    * Аравт 0 нь графикт хэзээ ч харагдахгүй.
-                    Админ бол аравтаар, хэрэглэгч бол хүн тус бүрээр харагдана.
-                </p>
-            </div>
+        <div class="mt-4 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow">
+            <p class="font-semibold mb-2">📊 График</p>
+            <canvas id="chartCanvas" height="180"></canvas>
         </div>
 
         <!-- RESULT -->
-        <div id="loading" class="hidden text-center text-gray-500 mt-4">⏳ Ачааллаж байна...</div>
+        <div id="loading" class="hidden text-center text-gray-500 mt-4">
+            ⏳ Ачааллаж байна...
+        </div>
         <div id="result" class="mt-4 space-y-3"></div>
     </div>
 
@@ -119,124 +122,71 @@
         let viewMode = "day";
         let chartInstance = null;
 
-        /* ================= SMALL HELPERS ================= */
-        function pad2(n) { return String(n).padStart(2, "0"); }
-        function todayISO() {
-            const d = new Date();
-            return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-        }
-        function monthISO() {
-            const d = new Date();
-            return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`; // yyyy-MM
-        }
-        function setLoading(on) {
-            loading.classList.toggle("hidden", !on);
-        }
-        function safeShowPicker(el) {
-            try { el && el.showPicker && el.showPicker(); } catch (_) { }
+        /* ================= THEME (AUTO NIGHT MODE) ================= */
+        // themeMode: "light" | "dark"
+        // themeAuto: "1" = auto night mode enabled, "0" = manual override
+
+        function isNightTime() {
+            const h = new Date().getHours();
+            return (h >= 20 || h < 6);
         }
 
-        /**
-         * ISO week "YYYY-Www" -> Monday yyyy-MM-dd
-         */
-        function weekToMonday(weekStr) {
-            const [yearStr, wStr] = String(weekStr).split("-W");
-            const year = Number(yearStr);
-            const week = Number(wStr);
+        function applyTheme(theme, save = true) {
+            const html = document.documentElement;
+            const btn = document.getElementById("themeToggle");
 
-            const jan4 = new Date(year, 0, 4);
-            const jan4Day = jan4.getDay() || 7; // Mon=1..Sun=7
-
-            const monday = new Date(jan4);
-            monday.setDate(jan4.getDate() - (jan4Day - 1) + (week - 1) * 7);
-
-            return `${monday.getFullYear()}-${pad2(monday.getMonth() + 1)}-${pad2(monday.getDate())}`;
-        }
-
-        /* ================= LOGIN LOADING ================= */
-        function setLoginLoading(isLoading) {
-            const btn = document.getElementById("loginBtn");
-            const text = document.getElementById("loginBtnText");
-            const spinner = document.getElementById("loginSpinner");
-
-            if (isLoading) {
-                btn.disabled = true;
-                text.innerText = "Нэвтэрч байна";
-                spinner.classList.remove("hidden");
+            if (theme === "dark") {
+                html.classList.add("dark");
+                btn.innerText = "🌞";
             } else {
-                btn.disabled = false;
-                text.innerText = "Нэвтрэх";
-                spinner.classList.add("hidden");
+                html.classList.remove("dark");
+                btn.innerText = "🌙";
+            }
+
+            if (save) {
+                localStorage.setItem("themeMode", theme);
             }
         }
 
-        /* ================= NOTIFICATIONS ================= */
-        function loadNotifPrefs() {
-            const n = localStorage.getItem("notifEnabled");
-            const r = localStorage.getItem("reminderEnabled");
-            notifToggle.checked = (n === "1");
-            reminderToggle.checked = (r === "1");
-        }
+        function initTheme() {
+            const auto = localStorage.getItem("themeAuto");
+            const saved = localStorage.getItem("themeMode");
 
-        notifToggle?.addEventListener("change", async () => {
-            localStorage.setItem("notifEnabled", notifToggle.checked ? "1" : "0");
-            if (notifToggle.checked) await ensureNotificationPermission();
-        });
+            // default: auto night mode ON
+            if (auto === null) localStorage.setItem("themeAuto", "1");
 
-        reminderToggle?.addEventListener("change", async () => {
-            localStorage.setItem("reminderEnabled", reminderToggle.checked ? "1" : "0");
-            if (reminderToggle.checked) {
-                await ensureNotificationPermission();
-                scheduleRemindersForToday();
-            } else {
-                clearReminders();
+            if (localStorage.getItem("themeAuto") === "1") {
+                applyTheme(isNightTime() ? "dark" : "light", false);
+            } else if (saved) {
+                applyTheme(saved, false);
             }
-        });
-
-        async function ensureNotificationPermission() {
-            if (!("Notification" in window)) return false;
-            if (Notification.permission === "granted") return true;
-            const p = await Notification.requestPermission();
-            return p === "granted";
         }
 
-        function notify(title, body) {
-            if (localStorage.getItem("notifEnabled") !== "1") return;
-            if (!("Notification" in window)) return;
-            if (Notification.permission !== "granted") return;
-            try { new Notification(title, { body }); } catch (_) { }
+        function toggleTheme() {
+            // manual override → disable auto
+            localStorage.setItem("themeAuto", "0");
+
+            const current = document.documentElement.classList.contains("dark")
+                ? "dark"
+                : "light";
+
+            applyTheme(current === "dark" ? "light" : "dark");
         }
 
-        let reminderTimers = [];
-        function clearReminders() {
-            reminderTimers.forEach(t => clearTimeout(t));
-            reminderTimers = [];
-        }
-        function scheduleRemindersForToday() {
-            clearReminders();
-            if (localStorage.getItem("reminderEnabled") !== "1") return;
-            if (!("Notification" in window) || Notification.permission !== "granted") return;
+        // re-check night mode every 10 minutes
+        setInterval(() => {
+            if (localStorage.getItem("themeAuto") === "1") {
+                applyTheme(isNightTime() ? "dark" : "light", false);
+            }
+        }, 10 * 60 * 1000);
 
-            const now = new Date();
-            const targets = ["05:00", "20:00"].map(hm => {
-                const [h, m] = hm.split(":").map(Number);
-                const t = new Date(now);
-                t.setHours(h, m, 0, 0);
-                if (t.getTime() <= now.getTime()) t.setDate(t.getDate() + 1);
-                return { hm, t };
-            });
-
-            targets.forEach(({ hm, t }) => {
-                const ms = t.getTime() - Date.now();
-                const id = setTimeout(() => {
-                    notify("⏰ Ирц шалгах цаг", `${hm} - Ирцээ шалгаарай`);
-                    scheduleRemindersForToday();
-                }, ms);
-                reminderTimers.push(id);
-            });
+        /* ================= LOGIN ================= */
+        function setLoginLoading(on) {
+            loginBtn.disabled = on;
+            loginBtnText.innerText = on ? "Нэвтэрч байна" : "Нэвтрэх";
+            loginSpinner.classList.toggle("hidden", !on);
         }
 
-        /* ================= AUTH ================= */
         async function login() {
             const phone = phoneInput.value.trim();
             if (!phone) return;
@@ -245,18 +195,17 @@
             setLoginLoading(true);
 
             try {
-                const res = await fetch(`${API_URL}?action=login&phone=${encodeURIComponent(phone)}`);
-                const data = await res.json();
+                const r = await fetch(`${API_URL}?action=login&phone=${encodeURIComponent(phone)}`);
+                const d = await r.json();
 
-                if (!data || data.success !== true) {
+                if (!d.success) {
                     loginError.classList.remove("hidden");
                     return;
                 }
 
-                localStorage.setItem("user", JSON.stringify(data));
+                localStorage.setItem("user", JSON.stringify(d));
                 initApp();
-            } catch (e) {
-                console.error(e);
+            } catch {
                 loginError.classList.remove("hidden");
             } finally {
                 setLoginLoading(false);
@@ -268,8 +217,10 @@
             location.reload();
         }
 
-        /* ================= INIT ================= */
+        /* ================= INIT APP ================= */
         function initApp() {
+            initTheme();
+
             const user = JSON.parse(localStorage.getItem("user"));
             if (!user) return;
 
@@ -279,310 +230,57 @@
             userName.innerText = user.name;
             userGroup.innerText = "Аравт: " + user.group;
 
-            // group input permissions
             groupInput.value = user.group;
             if (Number(user.group) !== 0) {
                 groupInput.readOnly = true;
-                groupInput.classList.add("bg-gray-100");
-            } else {
-                groupInput.readOnly = false;
-                groupInput.classList.remove("bg-gray-100");
+                groupInput.classList.add("bg-gray-100", "dark:bg-gray-600");
             }
 
-            // default dates
-            if (!dateDay.value) dateDay.value = todayISO();
-            if (!dateMonth.value) dateMonth.value = monthISO();
-
-            // picker open on click/focus
-            [dateDay, dateWeek, dateMonth].forEach(el => {
-                el.addEventListener("click", () => safeShowPicker(el));
-                el.addEventListener("focus", () => safeShowPicker(el));
-            });
-
-            loadNotifPrefs();
-
-            if (localStorage.getItem("reminderEnabled") === "1") {
-                ensureNotificationPermission().then(() => scheduleRemindersForToday());
-            }
+            dateDay.value ||= new Date().toISOString().slice(0, 10);
+            dateMonth.value ||= new Date().toISOString().slice(0, 7);
         }
 
         window.onload = initApp;
 
         /* ================= MODE ================= */
-        function setMode(mode) {
-            viewMode = mode;
-
-            [btnDay, btnWeek, btnMonth].forEach(b => {
-                b.classList.remove("bg-blue-600", "text-white");
-                b.classList.add("bg-gray-200");
-            });
-            if (mode === "day") btnDay.classList.add("bg-blue-600", "text-white");
-            if (mode === "week") btnWeek.classList.add("bg-blue-600", "text-white");
-            if (mode === "month") btnMonth.classList.add("bg-blue-600", "text-white");
-
-            dateDay.classList.toggle("hidden", mode !== "day");
-            dateWeek.classList.toggle("hidden", mode !== "week");
-            dateMonth.classList.toggle("hidden", mode !== "month");
-
-            if (mode === "day" && !dateDay.value) dateDay.value = todayISO();
-            if (mode === "month" && !dateMonth.value) dateMonth.value = monthISO();
+        function setMode(m) {
+            viewMode = m;
+            dateDay.classList.toggle("hidden", m !== "day");
+            dateWeek.classList.toggle("hidden", m !== "week");
+            dateMonth.classList.toggle("hidden", m !== "month");
         }
 
-        /* ================= CHART UI ================= */
-        function toggleChart() {
-            const isHidden = chartWrap.classList.toggle("hidden");
-            toggleChartBtn.innerText = isHidden ? "Харуулах" : "Нуух";
-        }
-        function destroyChart() {
-            if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
-        }
-
-        /* ================= LOAD ================= */
+        /* ================= LOAD ATTENDANCE ================= */
         async function loadAttendance() {
             const user = JSON.parse(localStorage.getItem("user"));
             if (!user) return;
 
-            // group: user.group unless admin; also never chart group 0
-            let group = Number(groupInput.value || 0);
-            if (Number(user.group) !== 0) group = Number(user.group);
-
+            let group = Number(user.group);
             let action, date;
 
             if (viewMode === "day") {
                 action = "attendanceByDay";
-                date = dateDay.value; // yyyy-MM-dd
-                if (!date) return alert("Огноо сонгоно уу");
+                date = dateDay.value;
             }
-
             if (viewMode === "week") {
                 action = "attendanceByWeek";
-                if (!dateWeek.value) return alert("7 хоног сонгоно уу");
-                date = weekToMonday(dateWeek.value); // monday yyyy-MM-dd
+                date = dateWeek.value;
             }
-
             if (viewMode === "month") {
                 action = "attendanceByMonth";
-                if (!dateMonth.value) return alert("Сар сонгоно уу");
-                date = dateMonth.value + "-01"; // yyyy-MM-01
+                date = dateMonth.value + "-01";
             }
 
-            setLoading(true);
+            loading.classList.remove("hidden");
             result.innerHTML = "";
 
             try {
-                const res = await fetch(`${API_URL}?action=${action}&date=${encodeURIComponent(date)}&group=${encodeURIComponent(group)}`);
-                const data = await res.json();
-
-                if (data && data.error) {
-                    result.innerHTML = `<p class="text-center text-red-500">${data.error}</p>`;
-                    return;
-                }
-
-                if (viewMode === "day") {
-                    const merged = await mergeDayWithAbsent(data, group);
-                    renderDayCards(merged);
-                    drawDayCharts(merged, date, group);
-
-                    const present = merged.filter(x => x.present).length;
-                    const absent = merged.filter(x => !x.present).length;
-                    notify("✅ Өдрийн ирц", `${date}: ирсэн ${present}, ирээгүй ${absent}`);
-                } else {
-                    renderSummarySorted(data);
-                    drawSummaryCharts(data, viewMode, date, group);
-
-                    const total = (data || []).reduce((s, x) => s + Number(x.count || 0), 0);
-                    notify(`✅ ${viewMode === "week" ? "7 хоног" : "Сар"}ийн ирц`, `Нийт ирц: ${total}`);
-                }
-            } catch (e) {
-                console.error(e);
-                result.innerHTML = "<p class='text-center text-red-500'>Алдаа гарлаа</p>";
+                const r = await fetch(`${API_URL}?action=${action}&date=${date}&group=${group}`);
+                const data = await r.json();
+                result.innerHTML = `<pre class="text-xs">${JSON.stringify(data, null, 2)}</pre>`;
             } finally {
-                setLoading(false);
+                loading.classList.add("hidden");
             }
-        }
-
-        /* ================= DAY MERGE: present + absent ================= */
-        async function mergeDayWithAbsent(attendedRows, group) {
-            const peopleRes = await fetch(`${API_URL}?action=people&group=${encodeURIComponent(group)}`);
-            const rawText = await peopleRes.text();
-
-            let people;
-            try { people = JSON.parse(rawText); }
-            catch (e) {
-                console.error("People JSON parse error:", rawText);
-                throw new Error("People parse error");
-            }
-
-            const attendedMap = {};
-            (attendedRows || []).forEach(r => { attendedMap[r.name] = r; });
-
-            const merged = (people || []).map(p => {
-                const a = attendedMap[p.name];
-                return a
-                    ? { ...a, present: true }
-                    : { name: p.name, group: Number(p.group), times: [], present: false };
-            });
-
-            merged.sort((a, b) => (Number(a.group) - Number(b.group)) || String(a.name).localeCompare(String(b.name)));
-            return merged;
-        }
-
-        /* ================= UI RENDERERS ================= */
-        function renderDayCards(rows) {
-            result.innerHTML = "";
-
-            if (!rows || rows.length === 0) {
-                result.innerHTML = "<p class='text-center text-gray-500'>Мэдээлэл олдсонгүй</p>";
-                return;
-            }
-
-            rows.forEach(r => {
-                const right = r.present
-                    ? `<div class="text-xl font-bold text-blue-600">${(r.times || []).length}</div>`
-                    : `<div class="text-sm font-semibold text-red-500">Ирээгүй</div>`;
-
-                const badges = (r.times || []).map(t => `
-      <span class="px-2 py-1 bg-blue-100 rounded-lg text-sm">${t}</span>
-    `).join("");
-
-                result.innerHTML += `
-      <div class="bg-white p-4 rounded-2xl shadow">
-        <div class="flex justify-between items-center">
-          <div>
-            <p class="font-medium">${r.name}</p>
-            <p class="text-sm text-gray-500">Аравт: ${r.group}</p>
-          </div>
-          ${right}
-        </div>
-        <div class="mt-2 flex gap-2 flex-wrap">${badges}</div>
-      </div>
-    `;
-            });
-        }
-
-        function renderSummarySorted(rows) {
-            result.innerHTML = "";
-
-            if (!rows || rows.length === 0) {
-                result.innerHTML = "<p class='text-center text-gray-500'>Мэдээлэл олдсонгүй</p>";
-                return;
-            }
-
-            rows.sort((a, b) => (Number(a.group) - Number(b.group)) || String(a.name).localeCompare(String(b.name)));
-
-            rows.forEach(r => {
-                result.innerHTML += `
-      <div class="bg-white p-4 rounded-2xl shadow flex justify-between items-center">
-        <div>
-          <p class="font-medium">${r.name}</p>
-          <p class="text-sm text-gray-500">Аравт: ${r.group}</p>
-        </div>
-        <div class="text-xl font-bold text-blue-600">${r.count}</div>
-      </div>
-    `;
-            });
-        }
-
-        /* ================= CHARTS (Aравт 0-г хэзээ ч харуулахгүй) ================= */
-        function drawDayCharts(merged, date, group) {
-            destroyChart();
-            const ctx = document.getElementById("chartCanvas");
-            const isAdmin = Number(group) === 0;
-
-            // ❗ Aравт 0-ийг бүр мөсөн хасна
-            const filtered = (merged || []).filter(x => Number(x.group) !== 0);
-
-            // ADMIN: group breakdown
-            if (isAdmin) {
-                const byGroup = {};
-                filtered.forEach(x => {
-                    const g = Number(x.group);
-                    byGroup[g] = byGroup[g] || { present: 0, absent: 0 };
-                    if (x.present) byGroup[g].present++;
-                    else byGroup[g].absent++;
-                });
-
-                const groups = Object.keys(byGroup).map(Number).sort((a, b) => a - b);
-
-                chartInstance = new Chart(ctx, {
-                    type: "bar",
-                    data: {
-                        labels: groups.map(g => `Аравт ${g}`),
-                        datasets: [
-                            { label: "Ирсэн", data: groups.map(g => byGroup[g].present) },
-                            { label: "Ирээгүй", data: groups.map(g => byGroup[g].absent) }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: { title: { display: true, text: `Өдөр (${date}) – Аравтаар` } },
-                        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-                    }
-                });
-                return;
-            }
-
-            // USER: person breakdown
-            chartInstance = new Chart(ctx, {
-                type: "bar",
-                data: {
-                    labels: filtered.map(x => x.name),
-                    datasets: [{ label: "Ирсэн тоо", data: filtered.map(x => x.present ? (x.times || []).length : 0) }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { title: { display: true, text: `Өдөр (${date}) – Хүн тус бүр` } },
-                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-                }
-            });
-        }
-
-        function drawSummaryCharts(rows, mode, date, group) {
-            destroyChart();
-            const ctx = document.getElementById("chartCanvas");
-            const isAdmin = Number(group) === 0;
-
-            // ❗ Aравт 0-ийг бүр мөсөн хасна
-            const filtered = (rows || []).filter(r => Number(r.group) !== 0);
-
-            // ADMIN: group totals
-            if (isAdmin) {
-                const byGroup = {};
-                filtered.forEach(r => {
-                    const g = Number(r.group);
-                    byGroup[g] = (byGroup[g] || 0) + Number(r.count || 0);
-                });
-
-                const groups = Object.keys(byGroup).map(Number).sort((a, b) => a - b);
-
-                chartInstance = new Chart(ctx, {
-                    type: "bar",
-                    data: {
-                        labels: groups.map(g => `Аравт ${g}`),
-                        datasets: [{ label: "Нийт ирц", data: groups.map(g => byGroup[g]) }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: { title: { display: true, text: `${mode === "week" ? "7 хоног" : "Сар"} (${date}) – Аравтаар` } },
-                        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-                    }
-                });
-                return;
-            }
-
-            // USER: person totals
-            chartInstance = new Chart(ctx, {
-                type: "bar",
-                data: {
-                    labels: filtered.map(r => r.name),
-                    datasets: [{ label: "Нийт ирц", data: filtered.map(r => Number(r.count || 0)) }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { title: { display: true, text: `${mode === "week" ? "7 хоног" : "Сар"} (${date}) – Хүн тус бүр` } },
-                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-                }
-            });
         }
     </script>
 
