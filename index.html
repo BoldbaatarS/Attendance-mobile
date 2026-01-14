@@ -25,8 +25,12 @@
             <input id="phoneInput" type="tel" placeholder="Утасны дугаар"
                 class="w-full p-3 border rounded-xl mb-4 text-lg" />
 
-            <button onclick="login()" class="w-full bg-blue-600 text-white py-3 rounded-xl text-lg">
-                Нэвтрэх
+            <button id="loginBtn" onclick="login()"
+                class="w-full bg-blue-600 text-white py-3 rounded-xl text-lg flex items-center justify-center gap-2">
+                <span id="loginBtnText">Нэвтрэх</span>
+                <span id="loginSpinner" class="hidden">
+                    ⏳
+                </span>
             </button>
 
             <p id="loginError" class="hidden text-red-500 text-center mt-3">
@@ -216,23 +220,30 @@
         }
 
         /* ================= LOGIN ================= */
-        function login() {
-            const phone = phoneInput.value.trim();
+        async function login() {
+            const phone = document.getElementById("phoneInput").value.trim();
             if (!phone) return;
 
-            fetch(`${API_URL}?action=login&phone=${encodeURIComponent(phone)}`)
-                .then(r => r.json())
-                .then(res => {
-                    if (!res.success) {
-                        loginError.classList.remove("hidden");
-                        return;
-                    }
-                    localStorage.setItem("user", JSON.stringify(res));
-                    initApp();
-                })
-                .catch(() => {
-                    loginError.classList.remove("hidden");
-                });
+            document.getElementById("loginError").classList.add("hidden");
+            setLoginLoading(true);
+
+            try {
+                const res = await fetch(`${API_URL}?action=login&phone=${phone}`);
+                const data = await res.json();
+
+                if (data.error) {
+                    document.getElementById("loginError").classList.remove("hidden");
+                    setLoginLoading(false);
+                    return;
+                }
+
+                localStorage.setItem("user", JSON.stringify(data));
+                showApp();
+            } catch (e) {
+                document.getElementById("loginError").classList.remove("hidden");
+            } finally {
+                setLoginLoading(false);
+            }
         }
 
         function logout() {
@@ -368,6 +379,24 @@
                 result.innerHTML = "<p class='text-center text-red-500'>Алдаа гарлаа</p>";
             } finally {
                 setLoading(false);
+            }
+        }
+
+        function setLoginLoading(isLoading) {
+            const btn = document.getElementById("loginBtn");
+            const text = document.getElementById("loginBtnText");
+            const spinner = document.getElementById("loginSpinner");
+
+            if (isLoading) {
+                btn.disabled = true;
+                btn.classList.add("opacity-70");
+                text.innerText = "Нэвтэрч байна";
+                spinner.classList.remove("hidden");
+            } else {
+                btn.disabled = false;
+                btn.classList.remove("opacity-70");
+                text.innerText = "Нэвтрэх";
+                spinner.classList.add("hidden");
             }
         }
 
