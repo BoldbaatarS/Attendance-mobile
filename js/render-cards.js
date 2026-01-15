@@ -11,7 +11,7 @@ export function renderDayCards(rows) {
 
   if (!rows || rows.length === 0) {
     result.innerHTML =
-      "<p class='text-center text-gray-500'>Мэдээлэл олдсонгүй</p>";
+      "<p class='text-center text-gray-500 dark:text-gray-400'>Мэдээлэл олдсонгүй</p>";
     return;
   }
 
@@ -20,29 +20,48 @@ export function renderDayCards(rows) {
     const present = times.length > 0;
 
     const right = present
-      ? `<div class="text-xl font-bold text-blue-600">${times.length}</div>`
-      : `<div class="text-sm font-semibold text-red-500">Оролцоогүй</div>`;
+      ? `<div class="text-xl font-bold text-blue-600 dark:text-gray-400">
+           ${times.length}
+         </div>`
+      : `<div class="text-sm font-semibold text-red-500 dark:text-red-400">
+           Оролцоогүй
+         </div>`;
 
-    const badges = times.map(t => `
-          <span class="px-2 py-1 bg-blue-100 rounded-lg text-sm">${t}</span>
-      `).join("");
+    const badges = times
+      .map(
+        t => `
+        <span class="px-2 py-1 rounded-lg text-sm
+                     bg-blue-100 text-blue-700
+                     dark:bg-blue-900/40 dark:text-blue-200">
+          ${t}
+        </span>
+      `
+      )
+      .join("");
 
     result.innerHTML += `
-      <div class="bg-white p-4 rounded-2xl shadow">
-          <div class="flex justify-between items-center">
-              <div>
-                  <p class="font-medium">${r.name}</p>
-                  <p class="text-sm text-gray-500">Аравт: ${r.group}</p>
-              </div>
-              ${right}
+      <div class="bg-white dark:bg-gray-800
+                  text-gray-900 dark:text-gray-100
+                  p-4 rounded-2xl shadow">
+
+        <div class="flex justify-between items-center">
+          <div>
+            <p class="font-medium">${r.name}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              Аравт: ${r.group}
+            </p>
           </div>
-          <div class="mt-2 flex gap-2 flex-wrap">
-              ${badges}
-          </div>
+          ${right}
+        </div>
+
+        <div class="mt-2 flex gap-2 flex-wrap">
+          ${badges}
+        </div>
       </div>
-      `;
+    `;
   });
 }
+
 
 /**
  * =========================
@@ -82,7 +101,7 @@ export function renderSummarySorted(rows) {
               Аравт: ${r.group}
             </p>
           </div>
-          <div class="text-xl font-bold text-blue-600">
+          <div class="text-xl font-bold text-blue-600 dark:text-gray-400">
             ${Number(r.count || 0)}
           </div>
         </div>
