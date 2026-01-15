@@ -21,7 +21,7 @@ export function renderDayCards(rows) {
 
     const right = present
       ? `<div class="text-xl font-bold text-blue-600">${times.length}</div>`
-      : `<div class="text-sm font-semibold text-red-500">Ирээгүй</div>`;
+      : `<div class="text-sm font-semibold text-red-500">Оролцоогүй</div>`;
 
     const badges = times.map(t => `
           <span class="px-2 py-1 bg-blue-100 rounded-lg text-sm">${t}</span>

@@ -50,8 +50,18 @@ export function toggleChart() {
 export async function loadAttendance() {
     if (!state.user) return;
 
+    const groupInput = document.getElementById("groupInput");
+    const group = groupInput?.value
+        ? Number(groupInput.value)
+        : Number(state.user.group); // fallback
+
+    // if (!group) {
+    //     alert("Бүлэг сонгоно уу");
+    //     return;
+    // }
+
     let date, action;
-    let group = Number(state.user.group);
+    // let group = Number(state.user.group);
 
     if (state.viewMode === "day") {
         date = dateDay.value;

@@ -1,27 +1,33 @@
-export function isNightTime() {
-    const h = new Date().getHours();
-    return h >= 20 || h < 6;
-}
-
-export function applyTheme(theme, save = true) {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    themeToggle.innerText = theme === "dark" ? "🌞" : "🌙";
-    if (save) localStorage.setItem("themeMode", theme);
-}
-
+// js/theme.js
 export function initTheme() {
-    if (localStorage.getItem("themeAuto") === null)
-        localStorage.setItem("themeAuto", "1");
+    const mode = localStorage.getItem("themeMode") || "auto";
+    applyTheme(mode);
 
-    if (localStorage.getItem("themeAuto") === "1") {
-        applyTheme(isNightTime() ? "dark" : "light", false);
-    } else {
-        applyTheme(localStorage.getItem("themeMode") || "light", false);
+    // Add a listener for system theme changes if in auto mode
+    if (mode === "auto") {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            applyTheme("auto");
+        });
     }
 }
 
-export function toggleTheme() {
-    localStorage.setItem("themeAuto", "0");
-    const dark = document.documentElement.classList.contains("dark");
-    applyTheme(dark ? "light" : "dark");
+export function setTheme(mode) {
+    localStorage.setItem("themeMode", mode);
+    applyTheme(mode);
+}
+
+function applyTheme(mode) {
+    const html = document.documentElement;
+    html.classList.remove("dark");
+
+    if (mode === "dark") {
+        html.classList.add("dark");
+    } else if (mode === "light") {
+        html.classList.remove("dark");
+    } else if (mode === "auto") {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (prefersDark) {
+            html.classList.add("dark");
+        }
+    }
 }

@@ -18,10 +18,16 @@ export function drawCharts(rows, state) {
     const filtered = (rows || []).filter(r => Number(r.group) !== 0);
     if (filtered.length === 0) return;
 
-    const isAdmin = Number(state.user.group) === 0;
+    //const isAdmin = Number(state.user.group) === 0;
+    const groupInput = document.getElementById("groupInput");
+    const isAdmin = groupInput?.value
+        ? Number(groupInput.value)
+        : Number(state.user.group) === 0;
+
+    console.log("isAdmin:", isAdmin);
 
     // 👤 Хэрэглэгч → хүн тус бүр
-    if (!isAdmin) {
+    if (isAdmin) {
         chartInstance = new Chart(ctx, {
             type: "bar",
             data: {
