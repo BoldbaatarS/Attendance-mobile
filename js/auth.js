@@ -2,42 +2,49 @@
 import { API_URL } from "./config.js";
 import { state } from "./state.js";
 
-/* ================= UI helper ================= */
 function setLoginLoading(on) {
     loginBtn.disabled = on;
     loginBtnText.innerText = on ? "Нэвтэрч байна..." : "Нэвтрэх";
     loginSpinner.classList.toggle("hidden", !on);
 }
 
-/* ================= AUTH ================= */
 export async function login() {
     const phone = phoneInput.value.trim();
     if (!phone) return;
 
     loginError.classList.add("hidden");
-    setLoginLoading(true);
 
     try {
-        const res = await fetch(
-            `${API_URL}?action=login&phone=${encodeURIComponent(phone)}`
-        );
-        const data = await res.json();
+        const res = await fetch(`${API_URL}/att-api/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone }),
+        });
 
+        const data = await res.json();
         if (!data || data.success !== true) {
             loginError.classList.remove("hidden");
             return;
         }
 
-        state.user = data;
-        localStorage.setItem("user", JSON.stringify(data));
+        // ✅ normalize
+        const user = data.user;
+        const normalizedUser = {
+            ...user,
+            group: user.group_no,  // ✅ фронтын хуучин кодтой нийцүүлж өгч байна
+        };
 
-        // app.js-ийн initApp-ийг main.js дуудна
-        location.reload(); // ✔️ энгийн, найдвартай
+        state.user = normalizedUser;
+        state.token = data.token;
+        state.isAdmin = data.is_admin;
+
+        localStorage.setItem("user", JSON.stringify(normalizedUser));
+        localStorage.setItem("token", data.token);
+
+        location.reload();
     } catch (e) {
         console.error(e);
         loginError.classList.remove("hidden");
-    } finally {
-        setLoginLoading(false);
     }
 }
 
