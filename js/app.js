@@ -7,6 +7,10 @@ import { renderDayCards, renderSummarySorted } from "./render-cards.js";
 import { state } from "./state.js";
 
 
+export let lastRows = [];
+/* ================= ELEMENTS ================= */
+
+
 /* ================= INIT ================= */
 export function initApp() {
     state.user = JSON.parse(localStorage.getItem("user"));
@@ -27,12 +31,23 @@ export function initApp() {
         groupInput.readOnly = true;
         groupInput.classList.add("bg-gray-100");
     }
+
+
+    const btnAdd = document.getElementById("btnAddPerson");
+
+    if (Number(state.user.group) === 0) {
+        btnAdd.classList.remove("hidden");
+        btnAdd.onclick = () => openCreatePerson();
+    } else {
+        btnAdd.classList.add("hidden");
+    }
 }
 function authHeaders() {
     return {
         "Authorization": `Bearer ${state.token}`,
     };
 }
+
 /* ================= MODE ================= */
 export function setMode(mode) {
     state.viewMode = mode;
@@ -50,6 +65,18 @@ export function setMode(mode) {
 export function toggleChart() {
     chartWrap.classList.toggle("hidden");
 }
+
+function openCreatePerson() {
+    openPersonModal({
+        id: null,
+        name: "",
+        alias: "",
+        group: 1,
+    });
+}
+
+
+
 
 /* ================= LOAD ATTENDANCE ================= */
 export async function loadAttendance() {
@@ -80,6 +107,8 @@ export async function loadAttendance() {
         path = `/att-api/classes/${classID}/attendance/month`;
     }
 
+
+
     loading.classList.remove("hidden");
     result.innerHTML = "";
     destroyChart();
@@ -93,7 +122,9 @@ export async function loadAttendance() {
 
         if (state.viewMode === "day") {
             const merged = await mergeDayWithAbsent(data, classID, group);
-            renderDayCards(merged);
+            // renderDayCards(merged);
+            lastRows = merged;
+            renderDayCards(merged, Number(state.user.group) === 0);
             drawCharts(merged, state);
 
         } else {
@@ -129,12 +160,18 @@ async function mergeDayWithAbsent(attendedRows, classID, group) {
         const a = attendedMap[p.name];
         return a
             ? {
+                id: p.id,
+                alias: p.alias,
+                phone: p.phone,
                 name: p.name,
                 group: p.group_no,
                 times: a.times || [],
                 present: true
             }
             : {
+                id: p.id,
+                alias: p.alias,
+                phone: p.phone,
                 name: p.name,
                 group: p.group_no,
                 times: [],
@@ -145,3 +182,96 @@ async function mergeDayWithAbsent(attendedRows, classID, group) {
     return merged;
 }
 
+window.openCreatePerson = function () {
+    openPersonModal({
+        id: null,
+        name: "",
+        alias: "",
+        group: 1,
+    });
+};
+
+window.openEditPerson = function (id) {
+    const person = lastRows.find(r => r.id === id);
+    if (!person) return;
+
+    openPersonModal(person);
+};
+
+function openPersonModal(person) {
+    document.getElementById("personModal").classList.remove("hidden");
+    document.getElementById("personModalTitle").innerText =
+        person.id ? "Гишүүний мэдээлэл засах" : "Гишүүн нэмэх";
+    // console.log("EDIT PERSON:", person.group);
+
+    document.getElementById("personId").value = person.id ?? "";
+    document.getElementById("personName").value = person.name ?? "";
+    document.getElementById("personAlias").value = person.alias ?? "";
+    document.getElementById("phone").value = person.phone ?? "";
+    document.getElementById("personGroup").value = person.group ?? 1;
+}
+
+window.closePersonModal = function () {
+    document.getElementById("personModal").classList.add("hidden");
+};
+
+
+window.savePerson = async function () {
+    const id = document.getElementById("personId").value;
+    const name = document.getElementById("personName").value.trim();
+    const alias = document.getElementById("personAlias").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const group = Number(document.getElementById("personGroup").value);
+
+    if (!name) {
+        alert("Нэр заавал");
+        return;
+    }
+
+    const classID = state.user.class_id;
+
+    const payload = {
+        Name: name,
+        Alias: alias,
+        Phone: phone,
+        group_no: group,
+    };
+    //console.log("PAYLOAD:", payload);
+    const url = id
+        ? `${API_URL}/att-api/classes/${classID}/people/${id}`
+        : `${API_URL}/att-api/classes/${classID}/people`;
+
+    const method = id ? "PUT" : "POST";
+
+    await fetch(url, {
+        method,
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${state.token}`,
+        },
+        body: JSON.stringify(payload),
+    });
+
+    closePersonModal();
+    notify(id ? "Засагдлаа" : "Нэмэгдлээ", name);
+    loadAttendance();
+};
+
+window.deletePerson = async function (id, name) {
+    if (!confirm(`"${name}"-г устгах уу?`)) return;
+
+    const classID = state.user.class_id;
+
+    await fetch(
+        `${API_URL}/att-api/classes/${classID}/people/${id}`,
+        {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${state.token}`,
+            },
+        }
+    );
+
+    notify("Устгагдлаа", name);
+    loadAttendance();
+};
