@@ -123,6 +123,7 @@ export async function loadAttendance() {
 
         if (state.viewMode === "day") {
             const merged = await mergeDayWithAbsent(data, classID, group);
+
             renderDayCards(merged, Number(state.user.group) === 0);
             drawCharts(merged, state);
 
@@ -147,9 +148,14 @@ async function mergeDayWithAbsent(attendedRows, classID, group) {
         { headers: authHeaders() }
     );
 
-    const people = await res.json();
-    // console.log("ATTENDED:", classID);
-    // console.log("PEOPLE:", people);
+    let people = await res.json();
+
+    // 🚫 SYSTEM ADMIN-ийг бүр мөсөн хасна
+    people = people.filter(p =>
+        p.code !== "ADMIN-001" &&            // кодоор
+        p.name.toLowerCase() !== "admin"     // нэрээр (давхар хамгаалалт)
+    );
+
 
     const attendedMap = {};
     (attendedRows || []).forEach(r => {
@@ -161,6 +167,7 @@ async function mergeDayWithAbsent(attendedRows, classID, group) {
         return a
             ? {
                 id: p.id,
+                code: p.code,
                 alias: p.alias,
                 phone: p.phone,
                 name: p.name,
@@ -171,6 +178,7 @@ async function mergeDayWithAbsent(attendedRows, classID, group) {
             : {
                 id: p.id,
                 alias: p.alias,
+                code: p.code,
                 phone: p.phone,
                 name: p.name,
                 group: p.group_no,
