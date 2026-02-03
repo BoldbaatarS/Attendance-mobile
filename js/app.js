@@ -14,13 +14,14 @@ export let lastRows = [];
 /* ================= INIT ================= */
 export function initApp() {
     state.user = JSON.parse(localStorage.getItem("user"));
+
     state.token = localStorage.getItem("token");
     if (!state.user || !state.token) return;
 
     loginPage.classList.add("hidden");
     appPage.classList.remove("hidden");
 
-    userName.innerText = state.user.name;
+    userName.innerText = state.user.alias;
     userGroup.innerText = "Аравт: " + state.user.group; // ✅ одоо group байна
 
     dateDay.value ||= todayISO();
@@ -122,12 +123,11 @@ export async function loadAttendance() {
 
         if (state.viewMode === "day") {
             const merged = await mergeDayWithAbsent(data, classID, group);
-            // renderDayCards(merged);
-            lastRows = merged;
             renderDayCards(merged, Number(state.user.group) === 0);
             drawCharts(merged, state);
 
         } else {
+            const merged = await mergeDayWithAbsent(data, classID, group);
             renderSummarySorted(data);
             drawCharts(data, state);
 
@@ -174,7 +174,7 @@ async function mergeDayWithAbsent(attendedRows, classID, group) {
                 phone: p.phone,
                 name: p.name,
                 group: p.group_no,
-                times: [],
+                times: a.times || [],
                 present: false
             };
     });

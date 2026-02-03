@@ -141,7 +141,7 @@ export function drawCharts(rows, state) {
     chartInstance = new Chart(ctx, {
         type: "bar",
         data: {
-            labels: scoped.map(r => r.name),
+            labels: scoped.map(r => r.alias),
             datasets: [
                 {
                     label: "Ирц",

@@ -20,7 +20,7 @@ export function renderDayCards(rows, isAdmin = false) {
   rows.forEach(r => {
     const times = Array.isArray(r.times) ? r.times : [];
     const present = times.length > 0;
-
+    // console.log("R:", r);
     const right = present
       ? `<div class="text-xl font-bold text-blue-600">${times.length}</div>`
       : `<div class="text-sm font-semibold text-red-500">Оролцоогүй</div>`;
@@ -34,6 +34,7 @@ export function renderDayCards(rows, isAdmin = false) {
       .join("");
 
     const adminActions = isAdmin
+
       ? `
         <div class="flex gap-2">
           <button
@@ -42,7 +43,7 @@ export function renderDayCards(rows, isAdmin = false) {
             ✏️
           </button>
           <button
-            onclick="deletePerson(${r.id}, '${r.name}')"
+            onclick="deletePerson(${r.id}, '${r.alias}')"
             class="px-2 py-1 rounded-lg bg-red-600 text-white text-sm">
             🗑
           </button>
@@ -54,7 +55,7 @@ export function renderDayCards(rows, isAdmin = false) {
       <div class="bg-white p-4 rounded-2xl shadow">
         <div class="flex justify-between items-center">
           <div>
-            <p class="font-medium">${r.name}</p>
+            <p class="font-medium">${r.alias}</p>
             <p class="text-sm text-gray-500">Аравт: ${r.group}</p>
           </div>
           <div class="flex items-center gap-3">
@@ -101,11 +102,12 @@ export function renderSummarySorted(rows) {
         String(a.name).localeCompare(String(b.name))
     )
     .forEach(r => {
+
       result.innerHTML += `
         <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow
                     flex justify-between items-center">
           <div>
-            <p class="font-medium">${r.name}</p>
+            <p class="font-medium">${r.alias}</p>
             <p class="text-sm text-gray-500 dark:text-gray-400">
               Аравт: ${r.group}
             </p>
