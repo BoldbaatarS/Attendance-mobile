@@ -125,6 +125,7 @@ export async function loadAttendance() {
             const merged = await mergeDayWithAbsent(data, classID, group);
 
             renderDayCards(merged, Number(state.user.group) === 0);
+            lastRows = merged;
             drawCharts(merged, state);
 
         } else {
@@ -200,7 +201,11 @@ window.openCreatePerson = function () {
 };
 
 window.openEditPerson = function (id) {
+    // console.log("EDIT CLICK id =", id);
+    // console.log("lastRows =", lastRows);
+    // console.log("first row =", lastRows?.[0]);
     const person = lastRows.find(r => r.id === id);
+    // console.log("EDIT PERSON ID:", person);
     if (!person) return;
 
     openPersonModal(person);

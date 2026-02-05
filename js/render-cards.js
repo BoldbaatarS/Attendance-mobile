@@ -20,7 +20,7 @@ export function renderDayCards(rows, isAdmin = false) {
   rows.forEach(r => {
     const times = Array.isArray(r.times) ? r.times : [];
     const present = times.length > 0;
-    //console.log("R:", r);
+    // console.log("R:", r);
     const right = present
       ? `<div class="text-xl font-bold text-blue-600">${times.length}</div>`
       : `<div class="text-sm font-semibold text-red-500">Оролцоогүй</div>`;
