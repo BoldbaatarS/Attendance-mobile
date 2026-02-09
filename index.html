@@ -6,6 +6,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Attendance</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* iOS Safari date/week/month input FIX */
+        input[type="date"],
+        input[type="week"],
+        input[type="month"] {
+            -webkit-appearance: none;
+            appearance: none;
+
+            width: 100%;
+            box-sizing: border-box;
+
+            height: 44px;
+            /* iOS стандарт */
+            line-height: 44px;
+
+            padding-top: 0 !important;
+            /* 🔴 босоо padding устгана */
+            padding-bottom: 0 !important;
+            padding-left: 12px;
+            padding-right: 12px;
+
+            font-size: 16px !important;
+            /* ⚠️ заавал 16px */
+        }
+    </style>
     <script>
         window.tailwind = window.tailwind || {};
         window.tailwind.config = {
@@ -102,16 +127,21 @@
 
         <!-- FILTER -->
         <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow space-y-3">
-            <input id="dateDay" type="date" class="w-full p-3 border rounded-xl bg-white dark:bg-gray-800
-            text-gray-900 dark:text-gray-100
-            border-gray-300 dark:border-gray-600" />
-            <input id="dateWeek" type="week" class="hidden w-full p-3 border rounded-xl bg-white dark:bg-gray-800
-            text-gray-900 dark:text-gray-100
-            border-gray-300 dark:border-gray-600 " />
-            <input id="dateMonth" type="month" class="hidden w-full p-3 border rounded-xl bg-white dark:bg-gray-800
-            text-gray-900 dark:text-gray-100
-            border-gray-300 dark:border-gray-600" />
-
+            <input id="dateDay" type="date" class="w-full h-[44px] px-3 border rounded-xl
+  bg-white dark:bg-gray-800
+  text-gray-900 dark:text-gray-100
+  border-gray-300 dark:border-gray-600
+  text-[16px]" />
+            <input id="dateWeek" type="week" class="hidden w-full h-[44px] px-3 border rounded-xl
+  bg-white dark:bg-gray-800
+  text-gray-900 dark:text-gray-100
+  border-gray-300 dark:border-gray-600
+  text-[16px]" />
+            <input id="dateMonth" type="month" class="hidden w-full h-[44px] px-3 border rounded-xl
+  bg-white dark:bg-gray-800
+  text-gray-900 dark:text-gray-100
+  border-gray-300 dark:border-gray-600
+  text-[16px]" />
             <input id="groupInput" type="number" class="w-full p-3 border rounded-xl bg-white dark:bg-gray-800
             text-gray-900 dark:text-gray-100
             border-gray-300 dark:border-gray-600 " />
