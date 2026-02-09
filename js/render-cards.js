@@ -55,7 +55,7 @@ export function renderDayCards(rows, isAdmin = false) {
       <div class="bg-white p-4 rounded-2xl shadow">
         <div class="flex justify-between items-center">
           <div>
-            <p class="font-medium">${r.alias}</p>
+            <p class="font-medium text-gray-500">${r.alias}</p>
             <p class="text-sm text-gray-500">Аравт: ${r.group}</p>
             <p class="text-sm text-gray-500">Код: ${r.code}</p>
           </div>

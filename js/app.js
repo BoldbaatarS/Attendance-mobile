@@ -129,9 +129,9 @@ export async function loadAttendance() {
             drawCharts(merged, state);
 
         } else {
-            const merged = await mergeDayWithAbsent(data, classID, group);
+            const merged = await mergeWeekMonthWithAbsent(data, classID, group);
             renderSummarySorted(data);
-            drawCharts(data, state);
+            drawCharts(merged, state);
 
         }
 
@@ -165,30 +165,57 @@ async function mergeDayWithAbsent(attendedRows, classID, group) {
 
     const merged = people.map(p => {
         const a = attendedMap[p.name];
-        return a
-            ? {
-                id: p.id,
-                code: p.code,
-                alias: p.alias,
-                phone: p.phone,
-                name: p.name,
-                group: p.group_no,
-                times: a.times || [],
-                present: true
-            }
-            : {
-                id: p.id,
-                alias: p.alias,
-                code: p.code,
-                phone: p.phone,
-                name: p.name,
-                group: p.group_no,
-                times: a.times || [],
-                present: false
-            };
+        const times = Array.isArray(a?.times) ? a.times : [];
+
+        return {
+            id: p.id,
+            code: p.code,
+            alias: p.alias,
+            phone: p.phone,
+            name: p.name,
+            group: p.group_no,
+            times,
+            present: times.length > 0   // 🔥 ГОЛ ЗАСВАР
+        };
     });
 
     return merged;
+}
+
+async function mergeWeekMonthWithAbsent(summaryRows, classID, group) {
+    const res = await fetch(
+        `${API_URL}/att-api/classes/${classID}/people?group=${group}`,
+        { headers: authHeaders() }
+    );
+
+    let people = await res.json();
+
+    // 🚫 SYSTEM ADMIN хасна
+    people = people.filter(p =>
+        p.code !== "ADMIN-001" &&
+        p.name.toLowerCase() !== "admin"
+    );
+
+    const summaryMap = {};
+    (summaryRows || []).forEach(r => {
+        summaryMap[r.name] = r;
+    });
+
+    return people.map(p => {
+        const s = summaryMap[p.name];
+        const count = Number(s?.count || 0);
+
+        return {
+            id: p.id,
+            alias: p.alias,
+            code: p.code,
+            phone: p.phone,
+            name: p.name,
+            group: p.group_no,
+            times: Array(count).fill("✓"), // 🟢 dummy
+            present: count > 0
+        };
+    });
 }
 
 window.openCreatePerson = function () {
