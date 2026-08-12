@@ -245,6 +245,7 @@ function openPersonModal(person) {
     // console.log("EDIT PERSON:", person.group);
 
     document.getElementById("personId").value = person.id ?? "";
+    document.getElementById("personCode").value = person.code ?? "";
     document.getElementById("personName").value = person.name ?? "";
     document.getElementById("personAlias").value = person.alias ?? "";
     document.getElementById("phone").value = person.phone ?? "";
@@ -258,6 +259,7 @@ window.closePersonModal = function () {
 
 window.savePerson = async function () {
     const id = document.getElementById("personId").value;
+    const code = document.getElementById("personCode").value.trim();
     const name = document.getElementById("personName").value.trim();
     const alias = document.getElementById("personAlias").value.trim();
     const phone = document.getElementById("phone").value.trim();
@@ -271,6 +273,7 @@ window.savePerson = async function () {
     const classID = state.user.class_id;
 
     const payload = {
+        Code: code,
         Name: name,
         Alias: alias,
         Phone: phone,
